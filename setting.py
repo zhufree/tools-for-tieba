@@ -10,6 +10,8 @@ info_url='http://i.baidu.com/'
 tieba_url='http://tieba.baidu.com/f?kw=%B7%B4%D3%A6%CA%D4%BD%CC%D3%FD'
 
 add_thread_url = 'http://tieba.baidu.com/f/commit/thread/add'
+
+add_reply_url='http://tieba.baidu.com/f/commit/post/add'
 #用来构建发帖数据的真实mouse_pwd
 mouse_crack = [
         '55,61,61,41,49,48,52,53,12,52,41,53,41,52,41,53,41,52,41,53,12,49,55,53,49,60,61,51,12,52,55,61,53,41,61,53,53,',

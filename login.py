@@ -28,7 +28,7 @@ def login_baidu(username,password):
     tokenRequest = urllib2.Request(url=token_url)
     tokenResponse=urllib2.urlopen(tokenRequest,timeout=10)
     tokenInfo=tokenResponse.read()
-    print tokenInfo
+    #print tokenInfo
 
     #the response forms like following
     #{"errInfo":{ "no": "0" }, 
@@ -44,7 +44,7 @@ def login_baidu(username,password):
 
     matchVal = re.search(u'"token" : "(?P<tokenVal>.*?)"',tokenInfo)
     tokenVal = matchVal.group('tokenVal')
-    print '=======token is '+tokenVal+'========='
+    #print '=======token is '+tokenVal+'========='
 
     #visit login url and post data
     data={'charset':'UTF-8',
@@ -71,7 +71,7 @@ def login_baidu(username,password):
     loginResponse=urllib2.urlopen(loginRequest,timeout=10)
     
     #several ways to know whether login successful
-    print loginResponse.info()
+    #print loginResponse.info()
     #first:make sure PTOKEN,STOKEN,SAVEUSERID,PASSID are in response info
     '''
     Set-Cookie: PTOKEN=deleted; expires=Sun, 20-Apr-2014 03:40:38 GMT; path=/; domai
@@ -98,7 +98,7 @@ def login_baidu(username,password):
     loginResponse = f.read()
     URL_matcher = re.search(u"encodeURI\('(?P<URL>.*?)'\)", loginResponse)
     redirectURL = URL_matcher.group('URL')
-    print redirectURL
+    #print redirectURL
     #the link is like following
     '''
     https://passport.baidu.com/static/passpc-account/html/v3Jump.html?hao123Param=Zz
@@ -110,18 +110,23 @@ def login_baidu(username,password):
     2F%2Fpassport.baidu.com%2F&needToModifyPassword=0&gotourl=&auth=&error=0
     '''
     # and notice the last "error=0",that means login successful.
-    #third:visit the user's info center
-    infoRequest=urllib2.Request(url=info_url)
-    infoResponse=urllib2.urlopen(infoRequest,timeout=10)
-    #with open('test.html','w') as out:
-    #   out.write(infoResponse.read())#output the page to see    
-    infoPage=BeautifulSoup(infoResponse)
-    #print infoPage
-    m=infoPage.find('a',attrs={'class':'ibx-uc-nick'})
-    #print m.renderContents()
-    if m.renderContents()==username:
+    if 'error=0' in redirectURL:
         print 'Login successful!'
         return True
     else:
         print 'Fail to login_(:з」∠)_'
         return False
+    #third:visit the user's info center
+    #infoRequest=urllib2.Request(url=info_url)
+    #infoResponse=urllib2.urlopen(infoRequest,timeout=10)
+    #with open('test.html','w') as out:
+    #   out.write(infoResponse.read())#output the page to see    
+    #infoPage=BeautifulSoup(infoResponse)
+    #print infoPage
+    #m=infoPage.find('a',attrs={'class':'ibx-uc-nick'})
+    #print m.renderContents()
+    #if m.renderContents()==username:
+    #    return True
+    #else:
+    #    return False
+#login_baidu("转帖机器人1号","robot001")
