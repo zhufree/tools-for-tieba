@@ -1,6 +1,6 @@
 # tools-for-tieba
 some codes to help to do something in baidutieba
-#模拟登陆贴吧与操作
+##模拟登陆贴吧与操作
 ###Login 登陆
 必须要用百度ID登陆，手机号邮箱之类会报错，验证码暂时无解
 ###Post 发帖
