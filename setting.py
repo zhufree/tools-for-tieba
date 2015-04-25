@@ -7,11 +7,10 @@ login_url='https://passport.baidu.com/v2/api/?login'
 
 info_url='http://i.baidu.com/'
 
-tieba_url='http://tieba.baidu.com/f?kw=%B7%B4%D3%A6%CA%D4%BD%CC%D3%FD'
-
 add_thread_url = 'http://tieba.baidu.com/f/commit/thread/add'
 
 add_reply_url='http://tieba.baidu.com/f/commit/post/add'
+
 #用来构建发帖数据的真实mouse_pwd
 mouse_crack = [
         '55,61,61,41,49,48,52,53,12,52,41,53,41,52,41,53,41,52,41,53,12,49,55,53,49,60,61,51,12,52,55,61,53,41,61,53,53,',
@@ -27,7 +26,11 @@ mouse_crack = [
         '17,21,29,9,17,16,23,17,44,20,9,21,9,20,9,21,9,20,9,21,9,20,9,21,9,20,9,21,44,17,17,29,29,16,44,20,23,29,21,9,29,21,21,',
     ]
 
-username=''
-password=''
+headers = {}
+headers['Accept'] = 'application/json, text/javascript, */*; q=0.01'
+headers['Accept-Encoding'] = 'gzip,deflate,sdch'
+headers['Accept-Language'] = 'en-US,en;q=0.5'
+headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1 WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36'
+headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8'
 
-kw='反应试教育'
+

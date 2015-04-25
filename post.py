@@ -17,18 +17,18 @@ from login import *
 
 class Bar(object):
     """docstring for Bar"""
-    def __init__(self, tiebaURL):
+    def __init__(self, tiebaURL,kw):
         self.url = tiebaURL
+        self.kw=kw
     def getinfo(self):
         tiebaPage =BeautifulSoup(urllib2.urlopen(self.url))
         pageContent = str(tiebaPage)
         #print pageContent
-        fidPattern = re.compile(u"forumId:'(?P<fidValue>.*?)'")
-        tbsPattern = re.compile(u'PageData\.tbs = \"(?P<tbsValue>.*?)\"')
+
         #with open('test.html','w') as out:
             #out.write(pageContent)
 
-        fidMatch = re.search(u"\"id\":([0-9]+),\"is_like\"", pageContent)
+        fidMatch = re.search(u"\"forum_id\":([0-9]+),", pageContent)
         tbsMatch = re.search(u'PageData\.tbs = \"(?P<tbsValue>.*?)\"', pageContent)
 
         #some key param
@@ -40,12 +40,6 @@ class Bar(object):
         #make timestamp
         self.timestamp = str(int(time.time()*1000))
         #print 'time stamp is:   ',timestamp
-        self.headers = {}
-        self.headers['Accept'] = 'application/json, text/javascript, */*; q=0.01'
-        self.headers['Accept-Encoding'] = 'gzip,deflate,sdch'
-        self.headers['Accept-Language'] = 'en-US,en;q=0.5'
-        self.headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1 WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36'
-        self.headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8'
 
 
     def post(self,title,content):
@@ -56,25 +50,25 @@ class Bar(object):
         threadData = {
 
             '__type__'  :   'thread',
-            'content'   :   content.encode('utf-8'),
+            'content'   :   content,
             'fid'       :   self.fid,
             'floor_num' :   '0',
             'ie'        :   'utf-8',
-            'kw'        :   kw,
+            'kw'        :   self.kw,
             'mouse_pwd' :   mouse_crack[random.randint(0, len(mouse_crack)) - 1] + self.timestamp,
             'mouse_pwd_isclick' : '0',
             'mouse_pwd_t'   :self.timestamp,
             'rich_text' :   '1',
             'tbs'       :   self.tbs,
             'tid'       :   '0',
-            'title'     :   title.encode('utf-8'),
+            'title'     :   title,
 
         }
 
 
         postData = urllib.urlencode(threadData)
 
-        postThread = urllib2.Request(add_thread_url, postData,self.headers)
+        postThread = urllib2.Request(add_thread_url, postData,headers)
         send = urllib2.urlopen(postThread)
         buffer = StringIO( send.read())
         f = gzip.GzipFile(fileobj=buffer)
@@ -118,7 +112,7 @@ class Bar(object):
             'fid'       :   self.fid,
             #'floor_num' :   '8',
             'ie'        :   'utf-8',
-            'kw'        :   kw,
+            'kw'        :   self.kw,
             'mouse_pwd' :   mouse_crack[random.randint(0, len(mouse_crack)) - 1] + self.timestamp,
             'mouse_pwd_isclick' : '0',
             'mouse_pwd_t'   :self.timestamp,
@@ -130,7 +124,7 @@ class Bar(object):
 
         postData = urllib.urlencode(postData)
 
-        postThread = urllib2.Request(add_reply_url, postData,self.headers)
+        postThread = urllib2.Request(add_reply_url, postData,headers)
         send = urllib2.urlopen(postThread)
         buffer = StringIO( send.read())
         f = gzip.GzipFile(fileobj=buffer)
@@ -143,14 +137,11 @@ class Bar(object):
             print 'Fail to post_(:з」∠)_'
             return False
 
-bar=Bar(tieba_url)
-login_baidu("","")
-bar.getinfo()
-link_lst=['http://tieba.baidu.com/p/3649143599',
+#bar=Bar(tieba_url)
+#bar.getinfo()
+link_lst=[
 'http://tieba.baidu.com/p/3600373274',
 'http://tieba.baidu.com/p/3492845027',
 'http://tieba.baidu.com/p/3508624708',
-'http://tieba.baidu.com/p/3037083498']
-for i in link_lst:
-    bar.reply('reply test',i)
+]
 #bar.reply('[4.23]test',"http://tieba.baidu.com/p/3716708841")
