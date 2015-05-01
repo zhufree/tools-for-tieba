@@ -15,6 +15,12 @@ from setting import *
 
 from login import *
 
+import sys
+default_encoding = 'utf-8'
+if sys.getdefaultencoding() != default_encoding:
+    reload(sys)
+    sys.setdefaultencoding(default_encoding)
+
 class Bar(object):
     """docstring for Bar"""
     def __init__(self, tiebaURL,kw):
@@ -96,19 +102,19 @@ class Bar(object):
         }
         '''
         if "\"err_code\":0" in postResponse:
-            print 'Post successful!'
-            return True
+            tidMatch = re.search(u"\"tid\":([0-9]+),", postResponse)
+            self.tid=tidMatch.group(1)
+            print 'Post successful!tid is: '+self.tid
+            return self.tid
         else:
             print 'Fail to post_(:з」∠)_'
             return False
 
-    def reply(self,content,tie_url):
-        tidMatch = re.search(r"\d+", tie_url)
-        tid = tidMatch.group(0)
+    def reply(self,content,tid):
         postData = {
 
             '__type__'  :   'reply',
-            'content'   :   content.encode('utf-8'),
+            'content'   :   content,
             'fid'       :   self.fid,
             #'floor_num' :   '8',
             'ie'        :   'utf-8',
@@ -131,10 +137,11 @@ class Bar(object):
         postResponse = f.read()
         #print postResponse
         if "\"err_code\":0" in postResponse:
+
             print 'Post successful!'
             return True
         else:
-            print 'Fail to post_(:з」∠)_'
+            print 'Fail to post'
             return False
 
 #bar=Bar(tieba_url)

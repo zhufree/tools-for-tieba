@@ -11,17 +11,19 @@ def getcontent(url):
         pass
     else:
         title=soup.find("h2").string.encode('utf-8')
-        post_['title']=title
+        post_['title']=u'【转】'+title
+        post_['content']=[]
+        f=open('text.txt','w')
+        f.write(title)
         paras= soup.find_all("p") 
         for p in paras:
             if p.next.string!=None:
-                sentence=p.next.string.encode('utf-8')
-                if sentence!="已评论" and sentence!= "微信扫一扫":
-                    content+=sentence
-                    content+="\n"*2
-        with open('text.txt','w') as out:
-            out.write(title)
-            out.write(content)#output the page to see   
-        post_['content']=content 
+                sentence=p.next.string
+                #sentence=unicode(p.next.string,'utf-8')
+                #print sentence
+                if sentence not in ["已评论","微信扫一扫"," ","　","　　"]:
+                    f.write(sentence)
+                    post_['content'].append(sentence)
+        f.close()
         return post_
 
