@@ -5,8 +5,8 @@ from setting import *
 from snatch import *
 
 #set username and password
-username='立志反应试'
-password='15256654206'
+username=''
+password=''
 login_baidu(username, password)
 
 #set tieba url and kw(name in chinese)
