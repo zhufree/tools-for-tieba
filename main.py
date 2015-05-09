@@ -5,8 +5,8 @@ from setting import *
 from snatch import *
 
 #set username and password
-username=''
-password=''
+username='立志反应试'
+password='15256654206'
 login_baidu(username, password)
 
 #set tieba url and kw(name in chinese)
@@ -17,17 +17,18 @@ kw='反应试教育'
 bar=Bar(tieba_url,kw)
 bar.getinfo()
 #set article to post
-article_to_post_url='http://mp.weixin.qq.com/s?__biz=MzA3MTAwODgzOQ==&mid=204800583&idx=4&sn=9bb833461bd850bb46b11d051d38e94e#rd'
-post_=getcontent(article_to_post_url)
-#print len(post_['content'])
+article_to_post_url='http://mp.weixin.qq.com/s?__biz=MzA3MTAwODgzOQ==&mid=205326269&idx=4&sn=9549453289de094033eeafbad719aef3#rd'
+post_=get_from_wechat(article_to_post_url)
+print len(post_['content'])
 #post the first paragraph as first floor
 post_result=bar.post(post_['title'], post_['content'][0])
 while(post_result==False):#if post failed,try again
 	post_result=bar.post(post_['title'], post_['content'][0])
 
 tid=post_result#get id of the post,reply next paragraphs as reply
-
-for i in range(1,len(post_['content'])):
+#tid='3750930653'
+print tid
+for i in range(2,7):
 	print i
 	try:
 		print post_['content'][i]

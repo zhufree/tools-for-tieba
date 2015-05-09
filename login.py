@@ -19,14 +19,31 @@ def login_baidu(username,password):
     cookie_support=urllib2.HTTPCookieProcessor(cookie_jar)
     opener=urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
     urllib2.install_opener(opener)
-    print 'Loading'
+    print u'登录中...'
+
     #first:visit index page to get the BAIDUID,save in the cookiejar
     indexRequest = urllib2.Request(url=index_url)
-    urllib2.urlopen(indexRequest,timeout=10)
+    while True:
+        try:
+            urllib2.urlopen(indexRequest,timeout=10)
+        except Exception, e:
+            print e
+            continue
+        else:
+            break
+    
 
     #second:get token(with BAIDUID)
     tokenRequest = urllib2.Request(url=token_url)
-    tokenResponse=urllib2.urlopen(tokenRequest,timeout=10)
+    while True:
+        try:
+            tokenResponse=urllib2.urlopen(tokenRequest,timeout=10)
+        except Exception, e:
+            print e
+            continue
+        else:
+            break
+
     tokenInfo=tokenResponse.read()
     #print tokenInfo
 
@@ -111,10 +128,10 @@ def login_baidu(username,password):
     '''
     # and notice the last "error=0",that means login successful.
     if 'error=0' in redirectURL:
-        print 'Login successful!'
+        print username+u' 登陆成功!'
         return True
     else:
-        print 'Fail to login_(:з」∠)_'
+        print u'登录失败'
         return False
     #third:visit the user's info center
     #infoRequest=urllib2.Request(url=info_url)
@@ -129,4 +146,3 @@ def login_baidu(username,password):
     #    return True
     #else:
     #    return False
-#login_baidu("转帖机器人1号","robot001")

@@ -11,6 +11,7 @@ add_thread_url = 'http://tieba.baidu.com/f/commit/thread/add'
 
 add_reply_url='http://tieba.baidu.com/f/commit/post/add'
 
+sign_url = 'http://c.tieba.baidu.com/c/c/forum/sign'
 #用来构建发帖数据的真实mouse_pwd
 mouse_crack = [
         '55,61,61,41,49,48,52,53,12,52,41,53,41,52,41,53,41,52,41,53,12,49,55,53,49,60,61,51,12,52,55,61,53,41,61,53,53,',
@@ -33,4 +34,22 @@ headers['Accept-Language'] = 'en-US,en;q=0.5'
 headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1 WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36'
 headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8'
 
-
+ties_to_up_lst=[
+'http://tieba.baidu.com/p/3508624708',#shourenyiyu
+'http://tieba.baidu.com/p/2723916882',#gaigezhemen
+'http://tieba.baidu.com/p/2975532771',#likebu
+'http://tieba.baidu.com/p/2973743925',#wenkebu
+'http://tieba.baidu.com/p/3048564605',#gongzhonghao
+'http://tieba.baidu.com/p/3177925808',#zhengwen
+'http://tieba.baidu.com/p/3338032531',#moocschool
+'http://tieba.baidu.com/p/3459101601',#zaixianjiaoyuanchao
+'http://tieba.baidu.com/p/3468721787',#wuxiaobo
+'http://tieba.baidu.com/p/3482715949',#zhibin
+'http://tieba.baidu.com/p/3649143599',#xihuandekemu
+'http://tieba.baidu.com/p/2844461467',#guandian
+'http://tieba.baidu.com/p/3600373274',#wuhanxianxia
+'http://tieba.baidu.com/p/2894346354',#mooctuijan
+'http://tieba.baidu.com/p/3492845027',#zouxiangxingdong
+'http://tieba.baidu.com/p/3734604563',#bianchengfuli
+'http://tieba.baidu.com/p/3445714434',#weilaidejiaoyu
+]
