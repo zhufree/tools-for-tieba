@@ -58,4 +58,4 @@ def get_from_paomianba(url):
             post_['content'].append(sentence)
         f.close()
         return post_
-get_from_paomianba('http://www.paomianba.com/2015/04/29/242.html')
+

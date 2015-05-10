@@ -21,6 +21,9 @@ if sys.getdefaultencoding() != default_encoding:
     reload(sys)
     sys.setdefaultencoding(default_encoding)
 
+tieba_url=''
+
+
 class Bar(object):
     """docstring for Bar"""
     def __init__(self, tiebaURL,kw):
@@ -47,6 +50,30 @@ class Bar(object):
         self.timestamp = str(int(time.time()*1000))
         #print 'time stamp is:   ',timestamp
 
+    def get_user_id(self):
+        '''get list of user id of who like tieba'''
+        print u'获取吧友id...'
+        page_count = 1
+        users_like_tieba = []
+        f=open('userid.txt','w')
+        while True:
+            user_url='http://tieba.baidu.com/f/like/furank?kw=%s&ie=utf-8&pn=%d' % (self.kw,page_count)
+            idRequest = urllib2.Request(user_url)
+            idSoup=BeautifulSoup(urllib2.urlopen(idRequest))
+            temp_like_tieba =[]
+            divs=idSoup.find_all('div',{'class':'drl_item_card'})
+            for div in divs:
+                f.writelines(div.next.renderContents()+'\n')
+                temp_like_tieba.append(div.next.renderContents())
+            if not temp_like_tieba:
+                break
+            if not users_like_tieba:
+                users_like_tieba = temp_like_tieba
+            else:
+                users_like_tieba += temp_like_tieba
+            page_count += 1
+        f.close()
+        return users_like_tieba
 
     def post(self,title,content):
         '''
@@ -104,10 +131,10 @@ class Bar(object):
         if "\"err_code\":0" in postResponse:
             tidMatch = re.search(u"\"tid\":([0-9]+),", postResponse)
             self.tid=tidMatch.group(1)
-            print 'Post successful!tid is: '+self.tid
+            print u'发帖成功，帖子id是：'+self.tid
             return self.tid
         else:
-            print 'Fail to post_(:з」∠)_'
+            print u'发帖失败'
             return False
 
     def reply(self,content,tid):
@@ -137,18 +164,31 @@ class Bar(object):
         postResponse = f.read()
         #print postResponse
         if "\"err_code\":0" in postResponse:
-
-            print 'Post successful!'
+            print u'回帖成功!'
             return True
         else:
-            print 'Fail to post'
+            print u'回帖失败'
             return False
 
-#bar=Bar(tieba_url)
-#bar.getinfo()
-link_lst=[
-'http://tieba.baidu.com/p/3600373274',
-'http://tieba.baidu.com/p/3492845027',
-'http://tieba.baidu.com/p/3508624708',
-]
-#bar.reply('[4.23]test',"http://tieba.baidu.com/p/3716708841")
+    def at_all_user(self,tid):
+        f=open('userid.txt','r')
+        while f.readline():
+            reply=u''
+            count=0
+            while count<5:#回一次贴最多只能艾特5个
+                tmp_user='@'+f.readline().rstrip()+' '
+                reply+=tmp_user
+                count+=1
+            print reply
+            result=bar.reply(reply,tid)
+            time.sleep(10)
+            while result!=True:
+                time.sleep(60)
+                result=bar.reply(reply,tid)
+
+login_baidu('','')
+bar=Bar(tieba_url,'')
+bar.getinfo()
+bar.get_user_id()
+bar.at_all_user('')
+
