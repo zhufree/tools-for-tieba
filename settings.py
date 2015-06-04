@@ -35,22 +35,4 @@ HEADERS = {
     'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
 }
 
-TIES_TO_UP_LST=[
-'3508624708',#shourenyiyu
-'2723916882',#gaigezhemen
-'2975532771',#likebu
-'2973743925',#wenkebu
-'3048564605',#gongzhonghao
-'3177925808',#zhengwen
-'3338032531',#moocschool
-'3459101601',#zaixianjiaoyuanchao
-'3468721787',#wuxiaobo
-'3482715949',#zhibin
-'3649143599',#xihuandekemu
-'2844461467',#guandian
-'3600373274',#wuhanxianxia
-'2894346354',#mooctuijan
-'3492845027',#zouxiangxingdong
-'3734604563',#bianchengfuli
-'3445714434',#weilaidejiaoyu
-]
+
