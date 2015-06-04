@@ -1,19 +1,19 @@
 #-*- coding:utf-8 -*-
-index_url='http://www.baidu.com/'
+INDEX_URL='http://www.baidu.com/'
 
-token_url='https://passport.baidu.com/v2/api/?getapi&tpl=pp&apiver=v3&class=login'
+TOKEN_URL='https://passport.baidu.com/v2/api/?getapi&tpl=pp&apiver=v3&class=login'
 
-login_url='https://passport.baidu.com/v2/api/?login'
+LOGIN_URL='https://passport.baidu.com/v2/api/?login'
 
-info_url='http://i.baidu.com/'
+INFO_URL='http://i.baidu.com/'
 
-add_thread_url = 'http://tieba.baidu.com/f/commit/thread/add'
+ADD_THREAD_URL = 'http://tieba.baidu.com/f/commit/thread/add'
 
-add_reply_url='http://tieba.baidu.com/f/commit/post/add'
+ADD_REPLY_URL='http://tieba.baidu.com/f/commit/post/add'
 
-sign_url = 'http://c.tieba.baidu.com/c/c/forum/sign'
+SIGN_URL = 'http://c.tieba.baidu.com/c/c/forum/sign'
 #用来构建发帖数据的真实mouse_pwd
-mouse_crack = [
+MOUSE_CRACK = [
         '55,61,61,41,49,48,52,53,12,52,41,53,41,52,41,53,41,52,41,53,12,49,55,53,49,60,61,51,12,52,55,61,53,41,61,53,53,',
         '119,114,124,105,113,115,114,115,76,116,105,117,105,116,105,117,105,116,105,117,105,116,105,117,105,116,105,117,76,112,117,115,125,114,117,112,76,116,119,125,117,105,125,117,117,',
         '57,56,58,38,62,63,56,57,3,59,38,58,38,59,38,58,38,59,38,58,38,59,38,58,38,59,38,58,3,59,60,61,63,57,61,3,59,56,50,58,38,50,58,58,',
@@ -27,14 +27,15 @@ mouse_crack = [
         '17,21,29,9,17,16,23,17,44,20,9,21,9,20,9,21,9,20,9,21,9,20,9,21,9,20,9,21,44,17,17,29,29,16,44,20,23,29,21,9,29,21,21,',
     ]
 
-headers = {}
-headers['Accept'] = 'application/json, text/javascript, */*; q=0.01'
-headers['Accept-Encoding'] = 'gzip,deflate,sdch'
-headers['Accept-Language'] = 'en-US,en;q=0.5'
-headers['User-Agent'] = 'Mozilla/5.0 (Windows NT 6.1 WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36'
-headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=UTF-8'
+HEADERS = {
+    'Accept': 'application/json, text/javascript, */*; q=0.01',
+    'Accept-Encoding': 'gzip,deflate,sdch',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1 WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36',
+    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+}
 
-ties_to_up_lst=[
+TIES_TO_UP_LST=[
 '3508624708',#shourenyiyu
 '2723916882',#gaigezhemen
 '2975532771',#likebu

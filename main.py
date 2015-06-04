@@ -1,21 +1,17 @@
 # -*- coding: utf-8 -*-
 from login import *
 from post import *
-from setting import *
+from local_settings import *
 from snatch import *
+import time
+#set user and login
+user=USER_LIST[0]
+login_baidu(user['username'], user['password'])
 
-#set username and password
-username=''
-password=''
-login_baidu(username, password)
-
-#set tieba url and kw(name in chinese)
-tieba_url='http://tieba.baidu.com/f?kw=%B7%B4%D3%A6%CA%D4%BD%CC%D3%FD'
-#tieba_url='http://tieba.baidu.com/f?kw=%E6%9C%B1%E5%AD%90%E5%AE%A5&ie=utf-8'
-#kw='朱子宥'
-kw='反应试教育'
-bar=Bar(tieba_url,kw)
+#set tieba
+bar=Bar(FYS_URL)
 bar.getinfo()
+
 #set article to post
 article_to_post_url='http://mp.weixin.qq.com/s?__biz=MzA3MTAwODgzOQ==&mid=205326269&idx=4&sn=9549453289de094033eeafbad719aef3#rd'
 post_=get_from_wechat(article_to_post_url)
@@ -34,7 +30,9 @@ for i in range(2,7):
 		print post_['content'][i]
 		result=bar.reply(post_['content'][i], tid)
 		while(result==False):
+			time.sleep(20)
 			result=bar.reply(post_['content'][i], tid)
+		time.sleep(10)
 	except Exception, e:
 		print e
 		break

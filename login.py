@@ -10,7 +10,7 @@ import time
 import random
 from bs4 import BeautifulSoup
 from StringIO import StringIO
-from setting import *
+from settings import *
 
 def login_baidu(username,password):
 
@@ -22,7 +22,7 @@ def login_baidu(username,password):
     print u'登录中...'
 
     #first:visit index page to get the BAIDUID,save in the cookiejar
-    indexRequest = urllib2.Request(url=index_url)
+    indexRequest = urllib2.Request(url=INDEX_URL)
     while True:
         try:
             urllib2.urlopen(indexRequest,timeout=10)
@@ -34,7 +34,7 @@ def login_baidu(username,password):
     
 
     #second:get token(with BAIDUID)
-    tokenRequest = urllib2.Request(url=token_url)
+    tokenRequest = urllib2.Request(url=TOKEN_URL)
     while True:
         try:
             tokenResponse=urllib2.urlopen(tokenRequest,timeout=10)
@@ -78,7 +78,7 @@ def login_baidu(username,password):
         }
     data=urllib.urlencode(data)
     data.encode('utf-8')
-    loginRequest = urllib2.Request(url=login_url,data=data)
+    loginRequest = urllib2.Request(url=LOGIN_URL,data=data)
     #header is not necessary
     loginRequest.add_header('Accept','text/html,application/xhtml+xml,application/xmlq=0.9,*/*q=0.8')
     loginRequest.add_header('Accept-Encoding','gzip,deflate,sdch')
@@ -146,3 +146,7 @@ def login_baidu(username,password):
     #    return True
     #else:
     #    return False
+if __name__ == '__main__':
+    username=raw_input('username:')
+    password=raw_input('password:')
+    login_baidu(username, password)

@@ -136,7 +136,16 @@ class User(object):
 
 
 
-user_list=[]
+user_list=[
+{'username':'立志反应试','password':'15256654206'},
+{'username':'等着海绵宝宝','password':'zfr15256654206'},
+{'username':'DA爱i小鬼','password':'zfr15256654206'},
+{'username':'朱子宥','password':'15256654206'},
+{'username':'无奈老是忘账号','password':'zfr15256654206'},
+{'username':'转帖机器人1号','password':'robot001'},
+{'username':'转帖机器人2号','password':'robot002'},
+{'username':'转帖机器人3号','password':'robot003'}
+]
 for user in user_list:
     user=User(user['username'],user['password'])
     tb=user.fetch_like_tieba_list()

@@ -11,7 +11,7 @@ import time
 import random
 from datetime import datetime
 from StringIO import StringIO
-from setting import *
+from settings import *
 
 from login import *
 
@@ -21,30 +21,28 @@ if sys.getdefaultencoding() != default_encoding:
     reload(sys)
     sys.setdefaultencoding(default_encoding)
 
-tieba_url=''
-
-
 class Bar(object):
     """docstring for Bar"""
-    def __init__(self, tiebaURL,kw):
+    def __init__(self, tiebaURL):
         self.url = tiebaURL
-        self.kw=kw
     def getinfo(self):
         tiebaPage =BeautifulSoup(urllib2.urlopen(self.url))
         pageContent = str(tiebaPage)
         #print pageContent
 
-        #with open('test.html','w') as out:
-            #out.write(pageContent)
+        with open('test.html','w') as out:
+            out.write(pageContent)
 
         fidMatch = re.search(u"\"forum_id\":([0-9]+),", pageContent)
         tbsMatch = re.search(u'PageData\.tbs = \"(?P<tbsValue>.*?)\"', pageContent)
-
+        kwMatch =re.search(u'PageData.forum.name = \'(?P<kwValue>.*?)\'', pageContent)
         #some key param
         self.fid = fidMatch.group(1)
         self.tbs = tbsMatch.group('tbsValue')
+        self.kw=kwMatch.group('kwValue')
         print 'fid is:',self.fid
         print 'tbs is: ',self.tbs
+        print 'kw is:',self.kw
 
         #make timestamp
         self.timestamp = str(int(time.time()*1000))
@@ -53,27 +51,21 @@ class Bar(object):
     def get_user_id(self):
         '''get list of user id of who like tieba'''
         print u'获取吧友id...'
-        page_count = 1
-        users_like_tieba = []
+        page_count = 1 #count from first page
         f=open('userid.txt','w')
         while True:
             user_url='http://tieba.baidu.com/f/like/furank?kw=%s&ie=utf-8&pn=%d' % (self.kw,page_count)
             idRequest = urllib2.Request(user_url)
             idSoup=BeautifulSoup(urllib2.urlopen(idRequest))
-            temp_like_tieba =[]
-            divs=idSoup.find_all('div',{'class':'drl_item_card'})
+            divs=idSoup.find_all('div',{'class':'drl_item_card'})#find 
             for div in divs:
                 f.writelines(div.next.renderContents()+'\n')
-                temp_like_tieba.append(div.next.renderContents())
-            if not temp_like_tieba:
+            if not divs:
                 break
-            if not users_like_tieba:
-                users_like_tieba = temp_like_tieba
-            else:
-                users_like_tieba += temp_like_tieba
             page_count += 1
         f.close()
-        return users_like_tieba
+        print '完成'
+        return True
 
     def post(self,title,content):
         '''
@@ -83,6 +75,7 @@ class Bar(object):
         threadData = {
 
             '__type__'  :   'thread',
+            'title'     :   title,
             'content'   :   content,
             'fid'       :   self.fid,
             'floor_num' :   '0',
@@ -94,13 +87,8 @@ class Bar(object):
             'rich_text' :   '1',
             'tbs'       :   self.tbs,
             'tid'       :   '0',
-            'title'     :   title,
-
         }
-
-
         postData = urllib.urlencode(threadData)
-
         postThread = urllib2.Request(add_thread_url, postData,headers)
         send = urllib2.urlopen(postThread)
         buffer = StringIO( send.read())
@@ -154,9 +142,7 @@ class Bar(object):
             'tid'       :   tid,#id of the post
 
         }
-
         postData = urllib.urlencode(postData)
-
         postThread = urllib2.Request(add_reply_url, postData,headers)
         send = urllib2.urlopen(postThread)
         buffer = StringIO( send.read())
@@ -172,23 +158,24 @@ class Bar(object):
 
     def at_all_user(self,tid):
         f=open('userid.txt','r')
-        while f.readline():
+        while f.readline():#once nextline exist
             reply=u''
             count=0
             while count<5:#回一次贴最多只能艾特5个
-                tmp_user='@'+f.readline().rstrip()+' '
-                reply+=tmp_user
+                tmp_user='@'+f.readline().rstrip()+' '#add @ and space
+                reply+=tmp_user#add to reply content
                 count+=1
-            print reply
-            result=bar.reply(reply,tid)
-            time.sleep(10)
-            while result!=True:
+            #print reply
+            result=bar.reply(reply,tid)#reply in thread
+            time.sleep(20)
+            while result!=True:#once fail to reply ,sleep for a long time
                 time.sleep(60)
                 result=bar.reply(reply,tid)
 
-login_baidu('','')
-bar=Bar(tieba_url,'')
-bar.getinfo()
-bar.get_user_id()
-bar.at_all_user('')
+if __name__=='__main__':
+    login_baidu('立志反应试','15256654206')
+    bar=Bar('http://tieba.baidu.com/f?kw=%B7%B4%D3%A6%CA%D4%BD%CC%D3%FD')
+    bar.getinfo()
+    bar.get_user_id()
+    #bar.at_all_user('')
 
