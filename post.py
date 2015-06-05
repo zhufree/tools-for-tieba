@@ -12,7 +12,7 @@ import random
 from datetime import datetime
 from StringIO import StringIO
 from settings import *
-
+from local_settings import *
 from login import *
 
 import sys
@@ -173,8 +173,8 @@ class Bar(object):
                 result=bar.reply(reply,tid)
 
 if __name__=='__main__':
-    login_baidu('立志反应试','15256654206')
-    bar=Bar('http://tieba.baidu.com/f?kw=%B7%B4%D3%A6%CA%D4%BD%CC%D3%FD')
+    login_baidu(USER_LIST[0]['username'],USER_LIST[0]['password'])
+    bar=Bar(FYS_URL)
     bar.getinfo()
     bar.get_user_id()
     #bar.at_all_user('')

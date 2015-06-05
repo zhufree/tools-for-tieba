@@ -12,11 +12,11 @@ import time
 import random
 from datetime import datetime
 from StringIO import StringIO
-from setting import *
+from settings import *
 import json
 import hashlib
 from login import *
-
+from local_settings import *
 import sys
 default_encoding = 'utf-8'
 if sys.getdefaultencoding() != default_encoding:
@@ -110,7 +110,7 @@ class User(object):
             sign_post_data = self._decode_uri_post(sign_post_data)
             postData = urllib.urlencode(sign_post_data)
 
-            signRequest = urllib2.Request(sign_url,postData)
+            signRequest = urllib2.Request(SIGN_URL,postData)
             signResponse = urllib2.urlopen(signRequest, timeout=5)
             signResponse = json.load(signResponse)
             #print signResponse
@@ -136,17 +136,8 @@ class User(object):
 
 
 
-user_list=[
-{'username':'立志反应试','password':'15256654206'},
-{'username':'等着海绵宝宝','password':'zfr15256654206'},
-{'username':'DA爱i小鬼','password':'zfr15256654206'},
-{'username':'朱子宥','password':'15256654206'},
-{'username':'无奈老是忘账号','password':'zfr15256654206'},
-{'username':'转帖机器人1号','password':'robot001'},
-{'username':'转帖机器人2号','password':'robot002'},
-{'username':'转帖机器人3号','password':'robot003'}
-]
-for user in user_list:
+
+for user in USER_LIST:
     user=User(user['username'],user['password'])
     tb=user.fetch_like_tieba_list()
     user.fetch_tieba_info_and_sign(tb)
