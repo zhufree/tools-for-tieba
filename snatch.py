@@ -12,18 +12,18 @@ def get_from_wechat(url):
         pass
     else:
         title=soup.find("h2").string.encode('utf-8')
-        post_['title']=u'【转】'+title
+        post_['title']=unicode('【转】','utf-8')+unicode(title,'utf-8')
         post_['content']=[]
         f=open('text.txt','w')
         f.write(title)
-        paras= soup.find_all("p") 
+        paras= soup.find_all("p")+soup.find_all('section')
         for p in paras:
             if p.next.string!=None:
                 sentence=p.next.string
                 #sentence=unicode(p.next.string,'utf-8')
                 #print sentence
                 if sentence not in ["已评论","微信扫一扫"," ","　","　　"]:
-                    f.write(sentence)
+                    f.write(unicode(sentence))
                     post_['content'].append(sentence)
         f.close()
         return post_
@@ -59,3 +59,5 @@ def get_from_paomianba(url):
         f.close()
         return post_
 
+if __name__ == '__main__':
+    get_from_wechat('http://mp.weixin.qq.com/s?__biz=MzA3MTAwODgzOQ==&mid=206253717&idx=1&sn=1dfc59b8c4e8adca27f94d2e16345a13#rd')

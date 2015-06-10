@@ -35,14 +35,15 @@ class Bar(object):
 
         fidMatch = re.search(u"\"forum_id\":([0-9]+),", pageContent)
         tbsMatch = re.search(u'PageData\.tbs = \"(?P<tbsValue>.*?)\"', pageContent)
-        kwMatch =re.search(u'PageData.forum.name = \'(?P<kwValue>.*?)\'', pageContent)
+        #kwMatch =re.search(u'PageData.forum.name = \'(?P<kwValue>.*?)\'', pageContent)
+        titleStr=tiebaPage.find('title').string.replace('吧_百度贴吧','')
         #some key param
         self.fid = fidMatch.group(1)
         self.tbs = tbsMatch.group('tbsValue')
-        self.kw=kwMatch.group('kwValue')
-        print 'fid is:',self.fid
-        print 'tbs is: ',self.tbs
-        print 'kw is:',self.kw
+        self.kw=titleStr
+        #print 'fid is:',self.fid
+        #print 'tbs is: ',self.tbs
+        #print 'kw is:',self.kw
 
         #make timestamp
         self.timestamp = str(int(time.time()*1000))
@@ -81,7 +82,7 @@ class Bar(object):
             'floor_num' :   '0',
             'ie'        :   'utf-8',
             'kw'        :   self.kw,
-            'mouse_pwd' :   mouse_crack[random.randint(0, len(mouse_crack)) - 1] + self.timestamp,
+            'mouse_pwd' :   MOUSE_CRACK[random.randint(0, len(MOUSE_CRACK)) - 1] + self.timestamp,
             'mouse_pwd_isclick' : '0',
             'mouse_pwd_t'   :self.timestamp,
             'rich_text' :   '1',
@@ -89,7 +90,7 @@ class Bar(object):
             'tid'       :   '0',
         }
         postData = urllib.urlencode(threadData)
-        postThread = urllib2.Request(add_thread_url, postData,headers)
+        postThread = urllib2.Request(ADD_THREAD_URL, postData,HEADERS)
         send = urllib2.urlopen(postThread)
         buffer = StringIO( send.read())
         f = gzip.GzipFile(fileobj=buffer)
@@ -134,7 +135,7 @@ class Bar(object):
             #'floor_num' :   '8',
             'ie'        :   'utf-8',
             'kw'        :   self.kw,
-            'mouse_pwd' :   mouse_crack[random.randint(0, len(mouse_crack)) - 1] + self.timestamp,
+            'mouse_pwd' :   MOUSE_CRACK[random.randint(0, len(MOUSE_CRACK)) - 1] + self.timestamp,
             'mouse_pwd_isclick' : '0',
             'mouse_pwd_t'   :self.timestamp,
             'rich_text' :   '1',
@@ -143,12 +144,12 @@ class Bar(object):
 
         }
         postData = urllib.urlencode(postData)
-        postThread = urllib2.Request(add_reply_url, postData,headers)
+        postThread = urllib2.Request(ADD_REPLY_URL, postData,HEADERS)
         send = urllib2.urlopen(postThread)
         buffer = StringIO( send.read())
         f = gzip.GzipFile(fileobj=buffer)
         postResponse = f.read()
-        #print postResponse
+        print postResponse
         if "\"err_code\":0" in postResponse:
             print u'回帖成功!'
             return True
@@ -173,9 +174,10 @@ class Bar(object):
                 result=bar.reply(reply,tid)
 
 if __name__=='__main__':
-    login_baidu(USER_LIST[0]['username'],USER_LIST[0]['password'])
-    bar=Bar(FYS_URL)
+    login_baidu(USER_LIST[4]['username'],USER_LIST[4]['password'])
+    bar=Bar('http://tieba.baidu.com/f?ie=utf-8&kw=%E9%AB%98%E4%B8%89')
     bar.getinfo()
-    bar.get_user_id()
+    bar.reply('up','3816192696')
+    #bar.get_user_id()
     #bar.at_all_user('')
 

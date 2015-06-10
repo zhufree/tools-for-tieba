@@ -18,6 +18,7 @@ import hashlib
 from login import *
 from local_settings import *
 import sys
+
 default_encoding = 'utf-8'
 if sys.getdefaultencoding() != default_encoding:
     reload(sys)
@@ -136,8 +137,8 @@ class User(object):
 
 
 
-
-for user in USER_LIST:
-    user=User(user['username'],user['password'])
-    tb=user.fetch_like_tieba_list()
-    user.fetch_tieba_info_and_sign(tb)
+if __name__=='__main__':
+	for user in USER_LIST:
+	    user=User(user['username'],user['password'])
+	    tb=user.fetch_like_tieba_list()
+	    user.fetch_tieba_info_and_sign(tb)

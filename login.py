@@ -11,6 +11,7 @@ import random
 from bs4 import BeautifulSoup
 from StringIO import StringIO
 from settings import *
+from local_settings import *
 
 def login_baidu(username,password):
 
@@ -64,29 +65,25 @@ def login_baidu(username,password):
     #print '=======token is '+tokenVal+'========='
 
     #visit login url and post data
-    data={'charset':'UTF-8',
+    rawData={'charset':'UTF-8',
         'token':tokenVal,
         'isPhone':'false',  
         'u' : 'https://passport.baidu.com/',
         'loginType':'1',          
         'username':username,          
         'password':password, 
-        'tpl':'pp',
+        'tpl':'tb',
         'staticpage':'https://passport.baidu.com/static/passpc-account/html/v3Jump.html',
-        'verifycode':'nlvv',       
-        'callback' : 'parent.bd__pcbs__ra48vi'
+        'verifycode':'',       
+        'callback' : "bd__cbs__34xoc9"
         }
-    data=urllib.urlencode(data)
-    data.encode('utf-8')
-    loginRequest = urllib2.Request(url=LOGIN_URL,data=data)
-    #header is not necessary
-    loginRequest.add_header('Accept','text/html,application/xhtml+xml,application/xmlq=0.9,*/*q=0.8')
-    loginRequest.add_header('Accept-Encoding','gzip,deflate,sdch')
-    loginRequest.add_header('Accept-Language','zh-CN,zhq=0.8')
-    loginRequest.add_header('User-Agent','Mozilla/5.0 (Windows NT 6.1 WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.72 Safari/537.36')
-    loginRequest.add_header('Content-Type','application/x-www-form-urlencoded')
+
+    post_data(rawData)
+
+def post_data(rawData):
+    postData=urllib.urlencode(rawData)
+    loginRequest = urllib2.Request(LOGIN_URL,postData,HEADERS)
     loginResponse=urllib2.urlopen(loginRequest,timeout=10)
-    
     #several ways to know whether login successful
     #print loginResponse.info()
     #first:make sure PTOKEN,STOKEN,SAVEUSERID,PASSID are in response info
@@ -110,9 +107,11 @@ def login_baidu(username,password):
     =passport.baidu.com; httponly
     '''
     #second:the response self is a gzip file,unzip file and get the link
+
     buffer = StringIO(loginResponse.read())
     f = gzip.GzipFile(fileobj=buffer)
     loginResponse = f.read()
+    #print loginResponse
     URL_matcher = re.search(u"encodeURI\('(?P<URL>.*?)'\)", loginResponse)
     redirectURL = URL_matcher.group('URL')
     #print redirectURL
@@ -128,8 +127,25 @@ def login_baidu(username,password):
     '''
     # and notice the last "error=0",that means login successful.
     if 'error=0' in redirectURL:
-        print username+u' 登陆成功!'
+        print rawData['username']+u' 登陆成功!'
         return True
+    #'error=257'，需要输入验证码
+    elif 'error=257' in redirectURL:
+        print redirectURL
+        vcodeMatch=re.search(r'codestring=jxIcaptchaservice\S+&username',redirectURL)
+        vcodeNum=vcodeMatch.group(0)[11:-9]
+        rawData['codestring']=vcodeNum
+        vcodeUrl='https://passport.baidu.com/cgi-bin/genimage?'+vcodeNum
+        #print vcodeUrl
+        vcodeRequest=urllib2.Request(vcodeUrl)
+        vcodeResponse=urllib2.urlopen(vcodeRequest)
+        with open('vcode.jpg','wb') as out:
+            out.write(vcodeResponse.read())
+            out.flush()
+        vcode=raw_input(u'input vcode:')
+        rawData['verifycode']=vcode
+        #print rawData
+        post_data(rawData)
     else:
         print u'登录失败'
         return False
@@ -146,7 +162,8 @@ def login_baidu(username,password):
     #    return True
     #else:
     #    return False
+
+
 if __name__ == '__main__':
-    username=raw_input('username:')
-    password=raw_input('password:')
-    login_baidu(username, password)
+    user=USER_LIST[4]
+    login_baidu(user['username'],user['password'])
