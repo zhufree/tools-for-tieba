@@ -11,6 +11,8 @@ ADD_THREAD_URL = 'http://tieba.baidu.com/f/commit/thread/add'
 
 ADD_REPLY_URL='http://tieba.baidu.com/f/commit/post/add'
 
+DELETE_REPLY_URL='http://tieba.baidu.com/f/commit/post/delete'
+
 SIGN_URL = 'http://c.tieba.baidu.com/c/c/forum/sign'
 #用来构建发帖数据的真实mouse_pwd
 MOUSE_CRACK = [

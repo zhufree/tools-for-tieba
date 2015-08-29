@@ -72,10 +72,10 @@ def login_baidu(username,password):
         'loginType':'1',          
         'username':username,          
         'password':password, 
-        'tpl':'tb',
+        'tpl':'pp',
         'staticpage':'https://passport.baidu.com/static/passpc-account/html/v3Jump.html',
-        'verifycode':'',       
-        'callback' : "bd__cbs__34xoc9"
+        'verifycode':'nlvv',       
+        'callback' : "parent.bd__pcbs__ra48vi"
         }
 
     post_data(rawData)
@@ -131,8 +131,8 @@ def post_data(rawData):
         return True
     #'error=257'，需要输入验证码
     elif 'error=257' in redirectURL:
-        print redirectURL
-        vcodeMatch=re.search(r'codestring=jxIcaptchaservice\S+&username',redirectURL)
+        #print redirectURL
+        vcodeMatch=re.search(r'codestring=tcIcaptchaservice\S+&username',redirectURL)
         vcodeNum=vcodeMatch.group(0)[11:-9]
         rawData['codestring']=vcodeNum
         vcodeUrl='https://passport.baidu.com/cgi-bin/genimage?'+vcodeNum

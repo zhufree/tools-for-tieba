@@ -30,8 +30,6 @@ class User(object):
         self.username = username
         self.password=password
         self.login_status=login_baidu(username, password)#initial user class and login
-        while self.login_status!=True:
-            self.login_status=login_baidu(username, password)
 
     def fetch_like_tieba_list(self):
         '''get list of like tiebe'''
