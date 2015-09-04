@@ -60,8 +60,8 @@ class Bar(object):
             idSoup=BeautifulSoup(urllib2.urlopen(idRequest))
             divs=idSoup.find_all('div',{'class':'drl_item_card'})#find 
             for div in divs:
-                if '咖啡' in div.next.renderContents().encode('utf-8'):
-                    print div.next.renderContents().encode('GBK')
+                #if '咖啡' in div.next.renderContents().encode('utf-8'):
+                #   print div.next.renderContents().encode('GBK')
                 f.writelines(div.next.renderContents().encode('utf-8')+u',')
             if not divs:
                 break
