@@ -61,4 +61,7 @@ target/
 
 .idea/
 migrations/
-privatesettings.py
+local_settings.py
+*.html
+*.txt
+*.jpg

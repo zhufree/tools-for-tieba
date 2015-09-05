@@ -22,7 +22,7 @@ class Bar(object):
         self.kw = tiebaname
 
     def getinfo(self):
-    	""" get fid,tbs and kw """
+    	""" get fid and tbs """
         tiebaPage =BeautifulSoup(urllib2.urlopen(self.url))
         pageContent = str(tiebaPage)
         # print pageContent
@@ -61,7 +61,7 @@ class Bar(object):
                 break
             page_count += 1
         f.close()
-        print '完成'
+        # print '完成'
         return user_list
 
     def post(self,title,content):
@@ -88,8 +88,8 @@ class Bar(object):
         postData = urllib.urlencode(threadData)
         postThread = urllib2.Request(ADD_THREAD_URL, postData,HEADERS)
         send = urllib2.urlopen(postThread)
-        buffer = StringIO( send.read())
-        f = gzip.GzipFile(fileobj=buffer)
+        bufferr = StringIO( send.read())
+        f = gzip.GzipFile(fileobj=bufferr)
         postResponse = f.read()
         #print postResponse
         #the postResponse is like below
@@ -116,10 +116,10 @@ class Bar(object):
         if "\"err_code\":0" in postResponse:
             tidMatch = re.search(u"\"tid\":([0-9]+),", postResponse)
             self.tid=tidMatch.group(1)
-            print u'发帖成功，帖子id是：'+self.tid
+            # print u'发帖成功，帖子id是：'+self.tid
             return self.tid
         else:
-            print u'发帖失败'
+            # print u'发帖失败'
             return False
 
     def reply(self,content,tid):
@@ -170,6 +170,7 @@ class Bar(object):
                 return infoDict['content']['post_id']
 
     def reply_in_floor(self,content,tid,floor_num):
+    	# not succeed yet
         pid=str(self.get_repost_id(tid,floor_num))
 
         postData = {
@@ -201,7 +202,7 @@ class Bar(object):
             print u'回帖失败'
             return False
 
-    #删除回复
+    # 删除回复
     def delete_reply(self,tid,floor_num):
         pid=str(self.get_repost_id(tid,floor_num))
         postData = {

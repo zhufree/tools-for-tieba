@@ -62,3 +62,7 @@ target/
 .idea/
 migrations/
 local_settings.py
+*.html
+*.txt
+*.jpg
+*~
