@@ -9,6 +9,7 @@ import time
 import random
 import json
 import hashlib
+import threading
 
 from bs4 import BeautifulSoup
 from StringIO import StringIO
@@ -124,11 +125,13 @@ class Account(object):
             return True
         #'error=257'，need to input verifycode
         elif 'error=257' in redirectURL:
+            print redirectURL
             # match verify code
-            vcodeMatch = re.search(
-                r'codestring=tcIcaptchaservice\S+&username', redirectURL)
+            vcodeMatch = re.search(r'codestring=\S+&username', redirectURL)
+            
             # cut the string
             vcodeNum = vcodeMatch.group(0)[11:-9]
+            print vcodeNum
             # add into the post data
             rawData['codestring'] = vcodeNum
             # get vcode img url
@@ -234,14 +237,14 @@ class Account(object):
                     )
         return self.like_tiebas_info
 
-    def sign(fid, tbs, kw):
+    def sign(self, fid, tbs, kw):
         sign_post_data = {
             "_client_id": "03-00-DA-59-05-00-72-96-06-00-01-00-04-00-4C-43-01-00-34-F4-02-00-BC-25-09-00-4E-36",
             "_client_type": "4",
             "_client_version": "1.2.1.17",
             "_phone_imei": "540b43b59d21b7a4824e1fd31b08e9a6",
             "fid": fid,
-            "kw": name,
+            "kw": kw,
             "net_type": "3",
             'tbs': tbs
         }
@@ -291,9 +294,14 @@ class Account(object):
 
 
 if __name__ == '__main__':
-    user = USER_LIST[4]
-    account = Account(user['username'], user['password'])
-    account.get_bars()
-    account.fetch_tieba_info()
-    account.sign()
-    print account.like_tiebas_info
+    def auto(user):
+        account = Account(user['username'], user['password'])
+        account.get_bars()
+        account.fetch_tieba_info()
+        account.auto_sign()
+        for tieba_info in account.like_tiebas_info:
+            print tieba_info['name'],tieba_info['sign_status']
+        print 'end a user:'+user['username']
+    for user in USER_LIST:
+        auto(user)
+    print 'end all'
