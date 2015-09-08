@@ -34,7 +34,7 @@ class Account(object):
 
         self.username = username
         self.password = password
-        self.login_baidu()
+        # self.login_baidu()
 
     def login_baidu(self):
 
@@ -46,7 +46,7 @@ class Account(object):
         """
 
         # prepare:load cookiejar to save cookies
-        cookie_jar = cookielib.LWPCookieJar()
+        cookie_jar = cookielib.LWPCookieJar(self.username + '.txt')
         cookie_support = urllib2.HTTPCookieProcessor(cookie_jar)
         opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
         urllib2.install_opener(opener)
@@ -94,9 +94,9 @@ class Account(object):
             'callback': "parent.bd__pcbs__ra48vi"
         }
 
-        self.post_data(rawData)
+        self.post_data(rawData, cookie_jar)
 
-    def post_data(self, rawData):
+    def post_data(self, rawData, cookie_jar):
         """ 
         post data to login
         :param rawData: raw data dict.
@@ -121,6 +121,7 @@ class Account(object):
 
         # "error=0",that means login successful.
         if 'error=0' in redirectURL:
+            cookie_jar.save(self.username + '.txt', ignore_discard=True, ignore_expires=True)
             # print rawData['username']+u' logged in!'
             return True
         #'error=257'，need to input verifycode
@@ -148,7 +149,7 @@ class Account(object):
             vcode = raw_input(u'input vcode:')
             rawData['verifycode'] = vcode
             # post data again
-            post_data(rawData)
+            post_data(rawData, cookie_jar)
         else:
             # print u'登录失败'
             return False
@@ -163,7 +164,15 @@ class Account(object):
             'link': 'http://tieba.baidu.com/?f=xxxxxx'
         }
         """
-
+        try:
+            cookie_jar = cookielib.LWPCookieJar()
+            cookie_jar.load(self.username + '.txt', ignore_discard=True, ignore_expires=True)
+        except Exception, e:
+            self.login_baidu()
+        finally:
+            cookie_support = urllib2.HTTPCookieProcessor(cookie_jar)
+            opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
+            urllib2.install_opener(opener)
         def has_title_but_no_class(tag):
             return tag.has_attr('title') and not tag.has_attr('class')
         page_count = 1
@@ -271,7 +280,7 @@ class Account(object):
             # print u'签到失败'
             # print "Error:" + unicode(error_code) + " " +
             # unicode(error_msg)
-            return "Error:" + unicode(error_code) + " " + unicode(error_msg)
+            return False
 
 
     def _decode_uri_post(self, postData):
@@ -294,14 +303,10 @@ class Account(object):
 
 
 if __name__ == '__main__':
-    def auto(user):
-        account = Account(user['username'], user['password'])
-        account.get_bars()
-        account.fetch_tieba_info()
-        account.auto_sign()
-        for tieba_info in account.like_tiebas_info:
-            print tieba_info['name'],tieba_info['sign_status']
-        print 'end a user:'+user['username']
-    for user in USER_LIST:
-        auto(user)
+    for user in USER_LIST[3:]:
+        user = Account(user['username'], user['password'])
+        user.get_bars()
+        user.fetch_tieba_info()
+        user.auto_sign()
+        print 'end:' + user.username
     print 'end all'
