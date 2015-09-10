@@ -24,9 +24,12 @@ if sys.getdefaultencoding() != default_encoding:
     sys.setdefaultencoding(default_encoding)
 
 
+def has_title_but_no_class(tag):
+        return tag.has_attr('title') and not tag.has_attr('class')
+
 class Account(object):
 
-    """Login Baidu Account And Collect Info"""
+    """Login Baidu Account, Collect Info And Sign. """
 
     def __init__(self, username, password):
 
@@ -154,6 +157,8 @@ class Account(object):
             # print u'登录失败'
             return False
 
+    
+
     def get_bars(self):
         """
         get bars that account like
@@ -164,39 +169,54 @@ class Account(object):
             'link': 'http://tieba.baidu.com/?f=xxxxxx'
         }
         """
+        page_count = 1
+        self.like_tiebas = [] 
         try:
             cookie_jar = cookielib.LWPCookieJar()
             cookie_jar.load(self.username + '.txt', ignore_discard=True, ignore_expires=True)
+            print 'load'
         except Exception, e:
             self.login_baidu()
+            'create one'
         finally:
+            if self.visit_page():
+                pass
+            else:
+                self.login_baidu()
+                'create two'
             cookie_support = urllib2.HTTPCookieProcessor(cookie_jar)
             opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
             urllib2.install_opener(opener)
-        def has_title_but_no_class(tag):
-            return tag.has_attr('title') and not tag.has_attr('class')
-        page_count = 1
-        self.like_tiebas = []    
         while True:
-            like_tieba_url = 'http://tieba.baidu.com/f/like/mylike?&pn=%d' % page_count
-            fetchRequest = urllib2.Request(like_tieba_url)
-            fetchResponse = urllib2.urlopen(fetchRequest).read()
-            fetchPage = BeautifulSoup(fetchResponse, "lxml")
-            bar_boxs = fetchPage.find_all(has_title_but_no_class)
-            # print bar_boxs
+            if self.visit_page(page_count):
+                pass
+            else:
+                break
+            page_count += 1
+        return self.like_tiebas
+
+    def visit_page(self, page_id=1):
+        like_tieba_url = 'http://tieba.baidu.com/f/like/mylike?&pn=%d' % page_id
+        fetchRequest = urllib2.Request(like_tieba_url)
+        fetchResponse = urllib2.urlopen(fetchRequest).read()
+        fetchPage = BeautifulSoup(fetchResponse, "lxml")
+        bar_boxs = fetchPage.find_all(has_title_but_no_class)
+        if bar_boxs:
             temp_like_tieba = [{
                 'name': bar['title'].encode('utf-8'),
                 'link':'http://tieba.baidu.com'+bar['href']
             } for bar in bar_boxs]
             # each bar is a tuple with name and link
-            if not temp_like_tieba:
-                break
-            if not self.like_tiebas:
-                self.like_tiebas = temp_like_tieba
+            if temp_like_tieba:
+                if not self.like_tiebas:
+                    self.like_tiebas = temp_like_tieba
+                else:
+                    self.like_tiebas += temp_like_tieba
+                return True
             else:
-                self.like_tiebas += temp_like_tieba
-            page_count += 1
-        return self.like_tiebas
+                return False
+        else:
+            return False
 
     def fetch_tieba_info(self):
         """
@@ -303,10 +323,11 @@ class Account(object):
 
 
 if __name__ == '__main__':
-    for user in USER_LIST[3:]:
+    for user in USER_LIST[0:1]:
         user = Account(user['username'], user['password'])
         user.get_bars()
         user.fetch_tieba_info()
         user.auto_sign()
+        print user.like_tiebas
         print 'end:' + user.username
     print 'end all'

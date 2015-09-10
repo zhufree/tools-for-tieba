@@ -1,7 +1,5 @@
 #-*- coding:utf-8 -*-
 #post thread auto
-
-from bs4 import BeautifulSoup
 import cookielib
 import urllib
 import urllib2
@@ -11,22 +9,24 @@ import time
 import random
 from datetime import datetime
 from StringIO import StringIO
+
+from bs4 import BeautifulSoup
+
 from settings import *
 from local_settings import *
 
 
 class Bar(object):
-    """docstring for Bar"""
+    """Get Info Of A Bar,Do Post And Reply"""
     def __init__(self, tiebaname, tiebaurl):
         self.url = tiebaurl
         self.kw = tiebaname
 
-    def getinfo(self):
+    def get_info(self):
     	""" get fid and tbs """
-        tiebaPage =BeautifulSoup(urllib2.urlopen(self.url))
+        tiebaPage = BeautifulSoup(urllib2.urlopen(self.url))
         pageContent = str(tiebaPage)
         # print pageContent
-
         # with open('test.html','w') as out:
             # out.write(pageContent)
 
@@ -44,11 +44,14 @@ class Bar(object):
         # print 'time stamp is:   ',timestamp
 
     def get_user_id(self):
-        """get list of user id of who like tieba"""
+        """
+        get list of user id of who like tieba
+        :return:A list contain userid,as well as a txt file
+        """
         # print u'获取吧友id...'
         page_count = 1 
         # count from first page
-        f=open('userid.txt','w+')
+        f=open(slef.kw+'userid.txt','w+')
         user_list=[]
         while True:
             user_url='http://tieba.baidu.com/f/like/furank?kw=%s&ie=utf-8&pn=%d' % (self.kw,page_count)
@@ -65,25 +68,28 @@ class Bar(object):
         return user_list
 
     def post(self,title,content):
-        '''
+        """
         mouse_pwd is create by js,using for robot examination.
         kw is the name of the tieba.
-        '''
+        :param title:title of the post.
+        :param content:content of the post
+        :return:the tid of postThread, or false if post fialed.
+        """
         threadData = {
 
-            '__type__'  :   'thread',
-            'title'     :   title,
-            'content'   :   content,
-            'fid'       :   self.fid,
-            'floor_num' :   '0',
-            'ie'        :   'utf-8',
-            'kw'        :   self.kw,
-            'mouse_pwd' :   MOUSE_CRACK[random.randint(0, len(MOUSE_CRACK)) - 1] + self.timestamp,
-            'mouse_pwd_isclick' : '0',
-            'mouse_pwd_t'   :self.timestamp,
-            'rich_text' :   '1',
-            'tbs'       :   self.tbs,
-            'tid'       :   '0',
+            '__type__': 'thread',
+            'title': title,
+            'content': content,
+            'fid': self.fid,
+            'floor_num': '0',
+            'ie': 'utf-8',
+            'kw': self.kw,
+            'mouse_pwd': MOUSE_CRACK[random.randint(0, len(MOUSE_CRACK)) - 1] + self.timestamp,
+            'mouse_pwd_isclick': '0',
+            'mouse_pwd_t': self.timestamp,
+            'rich_text': '1',
+            'tbs': self.tbs,
+            'tid': '0',
         }
         postData = urllib.urlencode(threadData)
         postThread = urllib2.Request(ADD_THREAD_URL, postData,HEADERS)
@@ -115,7 +121,7 @@ class Bar(object):
         '''
         if "\"err_code\":0" in postResponse:
             tidMatch = re.search(u"\"tid\":([0-9]+),", postResponse)
-            self.tid=tidMatch.group(1)
+            self.tid = tidMatch.group(1)
             # print u'发帖成功，帖子id是：'+self.tid
             return self.tid
         else:
@@ -125,18 +131,18 @@ class Bar(object):
     def reply(self,content,tid):
         postData = {
 
-            '__type__'  :   'reply',
-            'content'   :   content,
-            'fid'       :   self.fid,
+            '__type__': 'reply',
+            'content': content,
+            'fid': self.fid,
             #'floor_num' :   '8',
-            'ie'        :   'utf-8',
-            'kw'        :   self.kw,
-            'mouse_pwd' :   MOUSE_CRACK[random.randint(0, len(MOUSE_CRACK)) - 1] + self.timestamp,
-            'mouse_pwd_isclick' : '0',
-            'mouse_pwd_t'   :self.timestamp,
-            'rich_text' :   '1',
-            'tbs'       :   self.tbs,
-            'tid'       :   tid,#id of the post
+            'ie': 'utf-8',
+            'kw': self.kw,
+            'mouse_pwd': MOUSE_CRACK[random.randint(0, len(MOUSE_CRACK)) - 1] + self.timestamp,
+            'mouse_pwd_isclick': '0',
+            'mouse_pwd_t': self.timestamp,
+            'rich_text': '1',
+            'tbs': self.tbs,
+            'tid': tid,#id of the post
 
         }
         postData = urllib.urlencode(postData)
@@ -171,7 +177,7 @@ class Bar(object):
 
     def reply_in_floor(self,content,tid,floor_num):
     	# not succeed yet
-        pid=str(self.get_repost_id(tid,floor_num))
+        pid = str(self.get_repost_id(tid, floor_num))
 
         postData = {
             'content'   :   content,
@@ -191,8 +197,8 @@ class Bar(object):
         postData = urllib.urlencode(postData)
         postThread = urllib2.Request(ADD_REPLY_URL, postData,HEADERS)
         send = urllib2.urlopen(postThread)
-        buffer = StringIO( send.read())
-        f = gzip.GzipFile(fileobj=buffer)
+        buffer_ = StringIO( send.read())
+        f = gzip.GzipFile(fileobj=buffer_)
         postResponse = f.read()
         #print postResponse
         if "\"err_code\":0" in postResponse:
@@ -204,7 +210,7 @@ class Bar(object):
 
     # 删除回复
     def delete_reply(self,tid,floor_num):
-        pid=str(self.get_repost_id(tid,floor_num))
+        pid = str(self.get_repost_id(tid, floor_num))
         postData = {
             'commit_fr' :   'pb',
             'fid'       :   self.fid,
@@ -249,3 +255,6 @@ class Bar(object):
             while result!=True:#once fail to reply ,sleep for a long time
                 time.sleep(60)
                 result=bar.reply(reply,tid)
+
+if __name__ == '__main__':
+	bar = Bar()
