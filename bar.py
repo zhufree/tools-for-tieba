@@ -18,9 +18,9 @@ from local_settings import *
 
 class Bar(object):
     """Get Info Of A Bar,Do Post And Reply"""
-    def __init__(self, tiebaname, tiebaurl):
+
+    def __init__(self, tiebaurl):
         self.url = tiebaurl
-        self.kw = tiebaname
 
     def get_info(self):
     	""" get fid and tbs """
@@ -32,10 +32,12 @@ class Bar(object):
 
         fidMatch = re.search(u"\"forum_id\":([0-9]+),", pageContent)
         tbsMatch = re.search(u'PageData\.tbs = \"(?P<tbsValue>.*?)\"', pageContent)
+        titleStr=tiebaPage.find('title').string.replace('吧_百度贴吧','')
 
         # some key param
         self.fid = fidMatch.group(1)
         self.tbs = tbsMatch.group('tbsValue')
+        self.kw = titleStr
         # print 'fid is:',self.fid
         # print 'tbs is: ',self.tbs
 
@@ -148,8 +150,8 @@ class Bar(object):
         postData = urllib.urlencode(postData)
         postThread = urllib2.Request(ADD_REPLY_URL, postData,HEADERS)
         send = urllib2.urlopen(postThread)
-        buffer = StringIO( send.read())
-        f = gzip.GzipFile(fileobj=buffer)
+        buffer_ = StringIO( send.read())
+        f = gzip.GzipFile(fileobj=buffer_)
         postResponse = f.read()
         #print postResponse
         if "\"err_code\":0" in postResponse:
@@ -212,22 +214,21 @@ class Bar(object):
     def delete_reply(self,tid,floor_num):
         pid = str(self.get_repost_id(tid, floor_num))
         postData = {
-            'commit_fr' :   'pb',
-            'fid'       :   self.fid,
-            'pid'       :   pid,
-            'ie'        :   'utf-8',
-            'kw'        :   self.kw,
-            'tbs'       :   self.tbs,
-            'tid'       :   tid,#id of the post
-            'is_finf'   :   'false',
-            'is_vipdel' :   '1',
+            'commit_fr':   'pb',
+            'fid': self.fid,
+            'pid': pid,
+            'ie': 'utf-8',
+            'kw': self.kw,
+            'tbs': self.tbs,
+            'tid': tid,#id of the post
+            'is_finf': 'false',
+            'is_vipdel': '1',
         }
-        print postData
         postData = urllib.urlencode(postData)
         postThread = urllib2.Request(DELETE_REPLY_URL, postData,HEADERS)
         send = urllib2.urlopen(postThread)
-        buffer = StringIO( send.read())
-        f = gzip.GzipFile(fileobj=buffer)
+        buffer_ = StringIO( send.read())
+        f = gzip.GzipFile(fileobj=buffer_)
         postResponse = f.read()
         #print postResponse
         if "\"err_code\":0" in postResponse:
@@ -240,21 +241,19 @@ class Bar(object):
             print u'删除失败'
             return False
 
-    def at_all_user(self,tid):
-        f=open('userid.txt','r')
+    def at_all_user(self, tid):
+        f = open('userid.txt', 'r')
         while f.readline():#once nextline exist
-            reply=u''
-            count=0
-            while count<5:#回一次贴最多只能艾特5个
-                tmp_user='@'+f.readline().rstrip()+' '#add @ and space
-                reply+=tmp_user#add to reply content
-                count+=1
+            reply = u''
+            count = 0
+            while count < 5:#回一次贴最多只能艾特5个
+                tmp_user = '@' + f.readline().rstrip() + ' '#add @ and space
+                reply += tmp_user#add to reply content
+                count += 1
             #print reply
-            result=bar.reply(reply,tid)#reply in thread
+            result = bar.reply(reply,tid)#reply in thread
             time.sleep(20)
-            while result!=True:#once fail to reply ,sleep for a long time
+            while result != True:#once fail to reply ,sleep for a long time
                 time.sleep(60)
-                result=bar.reply(reply,tid)
+                result = bar.reply(reply,t id)
 
-if __name__ == '__main__':
-	bar = Bar()

@@ -46,7 +46,7 @@ def up_to_many_post(tid_list):
 	for t in tid_list:
 		curBar=Bar(t['bar_url'])
 		curBar.getinfo()
-		curBar.reply('欢迎来UDream社区~www.u#dre#am.cl#ub',t['tid'])
+		curBar.reply(' xx',t['tid'])
 		time.sleep(30)
 
 

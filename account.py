@@ -9,13 +9,12 @@ import time
 import random
 import json
 import hashlib
-import threading
-
-from bs4 import BeautifulSoup
 from StringIO import StringIO
 
+from bs4 import BeautifulSoup
+
 from settings import *
-from local_settings import *
+# from local_settings import *
 
 import sys
 default_encoding = 'utf-8'
@@ -37,7 +36,18 @@ class Account(object):
 
         self.username = username
         self.password = password
+        self.like_tiebas = [] 
         # self.login_baidu()
+        try:
+            cookie_jar = cookielib.LWPCookieJar()
+            cookie_jar.load(self.username + '.txt', ignore_discard=True, ignore_expires=True)
+        except Exception, e:
+            self.login_baidu()
+        finally:
+            if self.visit_page():
+                pass
+            else:
+                self.login_baidu()
 
     def login_baidu(self):
 
@@ -155,9 +165,7 @@ class Account(object):
             post_data(rawData, cookie_jar)
         else:
             # print u'登录失败'
-            return False
-
-    
+            return False  
 
     def get_bars(self):
         """
@@ -170,23 +178,6 @@ class Account(object):
         }
         """
         page_count = 1
-        self.like_tiebas = [] 
-        try:
-            cookie_jar = cookielib.LWPCookieJar()
-            cookie_jar.load(self.username + '.txt', ignore_discard=True, ignore_expires=True)
-            print 'load'
-        except Exception, e:
-            self.login_baidu()
-            'create one'
-        finally:
-            if self.visit_page():
-                pass
-            else:
-                self.login_baidu()
-                'create two'
-            cookie_support = urllib2.HTTPCookieProcessor(cookie_jar)
-            opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
-            urllib2.install_opener(opener)
         while True:
             if self.visit_page(page_count):
                 pass
@@ -302,7 +293,6 @@ class Account(object):
             # unicode(error_msg)
             return False
 
-
     def _decode_uri_post(self, postData):
         """
         decode post data
@@ -323,11 +313,11 @@ class Account(object):
 
 
 if __name__ == '__main__':
-    for user in USER_LIST[0:1]:
+    for user in USER_LIST[1:]:
         user = Account(user['username'], user['password'])
         user.get_bars()
         user.fetch_tieba_info()
         user.auto_sign()
-        print user.like_tiebas
+        #print user.like_tiebas
         print 'end:' + user.username
     print 'end all'
