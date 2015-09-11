@@ -14,7 +14,7 @@ from StringIO import StringIO
 from bs4 import BeautifulSoup
 
 from settings import *
-# from local_settings import *
+from local_settings import *
 
 import sys
 default_encoding = 'utf-8'
@@ -40,7 +40,7 @@ class Account(object):
         # self.login_baidu()
         try:
             cookie_jar = cookielib.LWPCookieJar()
-            cookie_jar.load(self.username + '.txt', ignore_discard=True, ignore_expires=True)
+            cookie_jar.load('cookies/' + self.username + '.txt', ignore_discard=True, ignore_expires=True)
         except Exception, e:
             self.login_baidu()
         finally:
@@ -134,7 +134,7 @@ class Account(object):
 
         # "error=0",that means login successful.
         if 'error=0' in redirectURL:
-            cookie_jar.save(self.username + '.txt', ignore_discard=True, ignore_expires=True)
+            cookie_jar.save('cookies/' + self.username + '.txt', ignore_discard=True, ignore_expires=True)
             # print rawData['username']+u' logged in!'
             return True
         #'error=257'，need to input verifycode
@@ -145,7 +145,7 @@ class Account(object):
             
             # cut the string
             vcodeNum = vcodeMatch.group(0)[11:-9]
-            print vcodeNum
+            # print vcodeNum
             # add into the post data
             rawData['codestring'] = vcodeNum
             # get vcode img url
@@ -162,7 +162,7 @@ class Account(object):
             vcode = raw_input(u'input vcode:')
             rawData['verifycode'] = vcode
             # post data again
-            post_data(rawData, cookie_jar)
+            self.post_data(rawData, cookie_jar)
         else:
             # print u'登录失败'
             return False  
@@ -313,7 +313,7 @@ class Account(object):
 
 
 if __name__ == '__main__':
-    for user in USER_LIST[1:]:
+    for user in USER_LIST[0:1]:
         user = Account(user['username'], user['password'])
         user.get_bars()
         user.fetch_tieba_info()
