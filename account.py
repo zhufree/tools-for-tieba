@@ -41,11 +41,15 @@ class Account(object):
         try:
             cookie_jar = cookielib.LWPCookieJar()
             cookie_jar.load('cookies/' + self.username + '.txt', ignore_discard=True, ignore_expires=True)
+            cookie_support = urllib2.HTTPCookieProcessor(cookie_jar)
+            opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
+            urllib2.install_opener(opener)
+            print 'use cookiejar'
         except Exception, e:
             self.login_baidu()
         finally:
             if self.visit_page():
-                pass
+                self.like_tiebas = [] 
             else:
                 self.login_baidu()
 
@@ -63,7 +67,7 @@ class Account(object):
         cookie_support = urllib2.HTTPCookieProcessor(cookie_jar)
         opener = urllib2.build_opener(cookie_support, urllib2.HTTPHandler)
         urllib2.install_opener(opener)
-        # print u'Login...'
+        print u'Login...'
 
         # first:visit index page to get the BAIDUID,save in the cookiejar
         indexRequest = urllib2.Request(url=INDEX_URL)
@@ -135,11 +139,11 @@ class Account(object):
         # "error=0",that means login successful.
         if 'error=0' in redirectURL:
             cookie_jar.save('cookies/' + self.username + '.txt', ignore_discard=True, ignore_expires=True)
-            # print rawData['username']+u' logged in!'
+            print rawData['username']+' logged in!'
             return True
         #'error=257'，need to input verifycode
         elif 'error=257' in redirectURL:
-            print redirectURL
+            # print redirectURL
             # match verify code
             vcodeMatch = re.search(r'codestring=\S+&username', redirectURL)
             
@@ -164,7 +168,7 @@ class Account(object):
             # post data again
             self.post_data(rawData, cookie_jar)
         else:
-            # print u'登录失败'
+            print u'登录失败'
             return False  
 
     def get_bars(self):
@@ -184,6 +188,7 @@ class Account(object):
             else:
                 break
             page_count += 1
+        print 'get ' + str(len(self.like_tiebas)) + ' bars'
         return self.like_tiebas
 
     def visit_page(self, page_id=1):
@@ -191,13 +196,14 @@ class Account(object):
         fetchRequest = urllib2.Request(like_tieba_url)
         fetchResponse = urllib2.urlopen(fetchRequest).read()
         fetchPage = BeautifulSoup(fetchResponse, "lxml")
+        # print fetchPage
         bar_boxs = fetchPage.find_all(has_title_but_no_class)
         if bar_boxs:
             temp_like_tieba = [{
                 'name': bar['title'].encode('utf-8'),
                 'link':'http://tieba.baidu.com'+bar['href']
             } for bar in bar_boxs]
-            # each bar is a tuple with name and link
+            # each bar is a dict with name and link
             if temp_like_tieba:
                 if not self.like_tiebas:
                     self.like_tiebas = temp_like_tieba
@@ -237,6 +243,7 @@ class Account(object):
             _tbs = re.findall(re_tbs, wap_resp)
             tieba_info['tbs'] = _tbs and _tbs[0] or None
             self.like_tiebas_info.append(tieba_info)
+        # print self.like_tiebas_info
         return self.like_tiebas_info
 
     def auto_sign(self):
@@ -285,10 +292,10 @@ class Account(object):
         except KeyError:
             pass
         if error_code == '0':
+            print kw+u"吧 签到成功,经验+%d" % sign_bonus_point
             return True
-            # print tieba_info['kw']+u"吧 签到成功,经验+%d" % sign_bonus_point
         else:
-            # print u'签到失败'
+            print u'签到失败'
             # print "Error:" + unicode(error_code) + " " +
             # unicode(error_msg)
             return False
@@ -313,11 +320,15 @@ class Account(object):
 
 
 if __name__ == '__main__':
-    for user in USER_LIST[0:1]:
+    for user in USER_LIST[1:2]:
         user = Account(user['username'], user['password'])
         user.get_bars()
         user.fetch_tieba_info()
         user.auto_sign()
-        #print user.like_tiebas
+        # for i in user.like_tiebas_info:
+        #     if i['sign_status']:
+        #         pass
+        #     else:
+        #         print i
         print 'end:' + user.username
     print 'end all'
