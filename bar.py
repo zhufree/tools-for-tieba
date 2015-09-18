@@ -1,5 +1,5 @@
 #-*- coding:utf-8 -*-
-#post thread auto
+
 import cookielib
 import urllib
 import urllib2
@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 
 from settings import *
 from local_settings import *
+from account import Account
 
 
 class Bar(object):
@@ -24,7 +25,7 @@ class Bar(object):
 
     def get_info(self):
     	""" get fid and tbs """
-        tiebaPage = BeautifulSoup(urllib2.urlopen(self.url))
+        tiebaPage = BeautifulSoup(urllib2.urlopen(self.url), 'lxml')
         pageContent = str(tiebaPage)
         # print pageContent
         # with open('test.html','w') as out:
@@ -32,7 +33,7 @@ class Bar(object):
 
         fidMatch = re.search(u"\"forum_id\":([0-9]+),", pageContent)
         tbsMatch = re.search(u'PageData\.tbs = \"(?P<tbsValue>.*?)\"', pageContent)
-        titleStr=tiebaPage.find('title').string.replace('吧_百度贴吧','')
+        titleStr = tiebaPage.find('title').string.replace('吧_百度贴吧', '')
 
         # some key param
         self.fid = fidMatch.group(1)
@@ -42,7 +43,7 @@ class Bar(object):
         # print 'tbs is: ',self.tbs
 
         # make timestamp
-        self.timestamp = str(int(time.time()*1000))
+        self.timestamp = str(int(time.time() * 1000))
         # print 'time stamp is:   ',timestamp
 
     def get_user_id(self):
@@ -58,7 +59,7 @@ class Bar(object):
         while True:
             user_url='http://tieba.baidu.com/f/like/furank?kw=%s&ie=utf-8&pn=%d' % (self.kw,page_count)
             idRequest = urllib2.Request(user_url)
-            idSoup=BeautifulSoup(urllib2.urlopen(idRequest))
+            idSoup=BeautifulSoup(urllib2.urlopen(idRequest), 'lxml')
             divs=idSoup.find_all('div',{'class':'drl_item_card'})#find 
             user_list += [div.next.renderContents().encode('utf-8') for div in divs]
             f.writelines(','.join(user_list))
@@ -131,8 +132,13 @@ class Bar(object):
             return False
 
     def reply(self,content,tid):
+        """
+        reply to certian post
+        :param content:content to reply.
+        :param tid:id of the post.
+        :return:True, or false if post fialed.
+        """
         postData = {
-
             '__type__': 'reply',
             'content': content,
             'fid': self.fid,
@@ -166,43 +172,48 @@ class Bar(object):
         #print pn
         pageUrl='http://tieba.baidu.com/p/%s?pn=%d' % (tid,pn)
         pageRequest = urllib2.Request(pageUrl)
-        pageSoup=BeautifulSoup(urllib2.urlopen(pageRequest))
+        pageSoup=BeautifulSoup(urllib2.urlopen(pageRequest), 'lxml')
         with open('test.html','w') as out:
             out.write(urllib2.urlopen(pageRequest).read())
-        divs= pageSoup.find_all('div',{'class':"l_post l_post_bright "})
+        divs= pageSoup.find_all('div',{'class':"l_post j_l_post l_post_bright  "})
         null=None
         false=False
         for div in divs:
             infoDict = eval(div['data-field'])
-            if int(floor_num)== infoDict['content']['post_no']:
+            if int(floor_num) == infoDict['content']['post_no']:
                 return infoDict['content']['post_id']
 
     def reply_in_floor(self,content,tid,floor_num):
     	# not succeed yet
         pid = str(self.get_repost_id(tid, floor_num))
-
+        print pid
         postData = {
-            'content'   :   content,
-            'fid'       :   self.fid,
-            'pid'       :   pid,
-            'floor_num' :   floor_num,
-            'ie'        :   'utf-8',
-            'kw'        :   self.kw,
-            #'mouse_pwd' :   MOUSE_CRACK[random.randint(0, len(MOUSE_CRACK)) - 1] + self.timestamp,
-            #'mouse_pwd_isclick' : '0',
-            #'mouse_pwd_t'   :self.timestamp,
-            'rich_text' :   '1',
-            'tbs'       :   self.tbs,
-            'tid'       :   tid,#id of the post
+            'ie': 'utf-8',
+            'content': content,
+            'fid': self.fid,
+            'repostid': pid,
+            'quote_id': pid,
+            'floor_num': floor_num,
+            'ie': 'utf-8',
+            'kw': self.kw,
+            #'mouse_pwd': MOUSE_CRACK[random.randint(0, len(MOUSE_CRACK)) - 1] + self.timestamp,
+            #'mouse_pwd_isclick': '0',
+            #'mouse_pwd_t': self.timestamp,
+            'rich_text': '1',
+            'tbs': self.tbs,
+            'tid': tid, #id of the post
+            'anonymous': 0
 
         }
+        print postData
+
         postData = urllib.urlencode(postData)
-        postThread = urllib2.Request(ADD_REPLY_URL, postData,HEADERS)
+        postThread = urllib2.Request(ADD_REPLY_URL, postData, HEADERS)
         send = urllib2.urlopen(postThread)
         buffer_ = StringIO( send.read())
         f = gzip.GzipFile(fileobj=buffer_)
         postResponse = f.read()
-        #print postResponse
+        print postResponse
         if "\"err_code\":0" in postResponse:
             print u'回帖成功!'
             return True
@@ -214,7 +225,7 @@ class Bar(object):
     def delete_reply(self,tid,floor_num):
         pid = str(self.get_repost_id(tid, floor_num))
         postData = {
-            'commit_fr':   'pb',
+            'commit_fr': 'pb',
             'fid': self.fid,
             'pid': pid,
             'ie': 'utf-8',
@@ -255,5 +266,12 @@ class Bar(object):
             time.sleep(20)
             while result != True:#once fail to reply ,sleep for a long time
                 time.sleep(60)
-                result = bar.reply(reply,t id)
+                result = bar.reply(reply, tid)
 
+if __name__ == '__main__':
+    user = Account(USER_LIST[0]['username'], USER_LIST[0]['password'])
+    bar = Bar(FYS_URL)
+    bar.get_info()
+    # bar.reply_in_floor('succeed in floor','3974936496','15')
+    for i in range(20,23):
+        bar.delete_reply('3974936496',i)
