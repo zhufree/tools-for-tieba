@@ -175,7 +175,7 @@ class Account(object):
         """
         get bars that account like
         :need login first
-        :return: a list contain tieba that user likes, each format is :
+        :return: self.like_tiebas:a list contain tieba that user likes, each format is :
         {
             'name': 'XXXXXX',
             'link': 'http://tieba.baidu.com/?f=xxxxxx'
@@ -192,6 +192,11 @@ class Account(object):
         return self.like_tiebas
 
     def visit_page(self, page_id=1):
+        """
+        visit like tieba page to get tieba
+        :param page_id: page id of the like tieba list, default 1
+        :return: self.like_tiebas
+        """
         like_tieba_url = 'http://tieba.baidu.com/f/like/mylike?&pn=%d' % page_id
         fetchRequest = urllib2.Request(like_tieba_url)
         fetchResponse = urllib2.urlopen(fetchRequest).read()
@@ -265,6 +270,10 @@ class Account(object):
         return self.like_tiebas_info
 
     def sign(self, fid, tbs, kw):
+        """
+        do sign 
+        :param fid, tbs, kw: info of a bar
+        """
         sign_post_data = {
             "_client_id": "03-00-DA-59-05-00-72-96-06-00-01-00-04-00-4C-43-01-00-34-F4-02-00-BC-25-09-00-4E-36",
             "_client_type": "4",
@@ -320,7 +329,7 @@ class Account(object):
 
 
 if __name__ == '__main__':
-    for user in USER_LIST[1:2]:
+    for user in USER_LIST:
         user = Account(user['username'], user['password'])
         user.get_bars()
         user.fetch_tieba_info()

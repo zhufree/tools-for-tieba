@@ -24,7 +24,7 @@ class Bar(object):
         self.url = tiebaurl
 
     def get_info(self):
-    	""" get fid and tbs """
+    	""" get fid and tbs of a certian bar """
         tiebaPage = BeautifulSoup(urllib2.urlopen(self.url), 'lxml')
         pageContent = str(tiebaPage)
         # print pageContent
@@ -54,10 +54,10 @@ class Bar(object):
         # print u'获取吧友id...'
         page_count = 1 
         # count from first page
-        f=open(slef.kw+'userid.txt','w+')
-        user_list=[]
+        f = open(slef.kw+'userid.txt','w+')
+        user_list = []
         while True:
-            user_url='http://tieba.baidu.com/f/like/furank?kw=%s&ie=utf-8&pn=%d' % (self.kw,page_count)
+            user_url = 'http://tieba.baidu.com/f/like/furank?kw=%s&ie=utf-8&pn=%d' % (self.kw,page_count)
             idRequest = urllib2.Request(user_url)
             idSoup=BeautifulSoup(urllib2.urlopen(idRequest), 'lxml')
             divs=idSoup.find_all('div',{'class':'drl_item_card'})#find 
@@ -79,7 +79,6 @@ class Bar(object):
         :return:the tid of postThread, or false if post fialed.
         """
         threadData = {
-
             '__type__': 'thread',
             'title': title,
             'content': content,
@@ -95,10 +94,10 @@ class Bar(object):
             'tid': '0',
         }
         postData = urllib.urlencode(threadData)
-        postThread = urllib2.Request(ADD_THREAD_URL, postData,HEADERS)
+        postThread = urllib2.Request(ADD_THREAD_URL, postData, HEADERS)
         send = urllib2.urlopen(postThread)
-        bufferr = StringIO( send.read())
-        f = gzip.GzipFile(fileobj=bufferr)
+        buffer_ = StringIO(send.read())
+        f = gzip.GzipFile(fileobj=buffer_)
         postResponse = f.read()
         #print postResponse
         #the postResponse is like below
@@ -168,13 +167,18 @@ class Bar(object):
             return False
 
     def get_repost_id(self,tid,floor_num):#获取楼中楼回复所需的repostid
+        """
+        get repostid for reply in floor
+        :param tid: id of the post.
+        :param floor_num: the num of the floor to reply.
+        """
         pn=int(floor_num)/30
         #print pn
         pageUrl='http://tieba.baidu.com/p/%s?pn=%d' % (tid,pn)
         pageRequest = urllib2.Request(pageUrl)
         pageSoup=BeautifulSoup(urllib2.urlopen(pageRequest), 'lxml')
-        with open('test.html','w') as out:
-            out.write(urllib2.urlopen(pageRequest).read())
+        # with open('test.html','w') as out:
+        #     out.write(urllib2.urlopen(pageRequest).read())
         divs= pageSoup.find_all('div',{'class':"l_post j_l_post l_post_bright  "})
         null=None
         false=False
@@ -184,9 +188,14 @@ class Bar(object):
                 return infoDict['content']['post_id']
 
     def reply_in_floor(self,content,tid,floor_num):
-    	# not succeed yet
+    	"""
+        post reply in floor
+        :param content: content to post
+        :param tid:id of the whole post
+        :param floor_num: floor num
+        """
         pid = str(self.get_repost_id(tid, floor_num))
-        print pid
+        # print pid
         postData = {
             'ie': 'utf-8',
             'content': content,
@@ -196,16 +205,13 @@ class Bar(object):
             'floor_num': floor_num,
             'ie': 'utf-8',
             'kw': self.kw,
-            #'mouse_pwd': MOUSE_CRACK[random.randint(0, len(MOUSE_CRACK)) - 1] + self.timestamp,
-            #'mouse_pwd_isclick': '0',
-            #'mouse_pwd_t': self.timestamp,
             'rich_text': '1',
             'tbs': self.tbs,
             'tid': tid, #id of the post
             'anonymous': 0
 
         }
-        print postData
+        # print postData
 
         postData = urllib.urlencode(postData)
         postThread = urllib2.Request(ADD_REPLY_URL, postData, HEADERS)
@@ -223,6 +229,11 @@ class Bar(object):
 
     # 删除回复
     def delete_reply(self,tid,floor_num):
+        """
+        delete certian reply 
+        :param tid:id of the whole post
+        :param floor_num: floor num
+        """
         pid = str(self.get_repost_id(tid, floor_num))
         postData = {
             'commit_fr': 'pb',
@@ -273,5 +284,5 @@ if __name__ == '__main__':
     bar = Bar(FYS_URL)
     bar.get_info()
     # bar.reply_in_floor('succeed in floor','3974936496','15')
-    for i in range(20,23):
+    for i in range(20,20):
         bar.delete_reply('3974936496',i)
