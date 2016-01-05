@@ -166,9 +166,9 @@ class Bar(object):
             print u'回帖失败'
             return False
 
-    def get_repost_id(self,tid,floor_num):#获取楼中楼回复所需的repostid
+    def get_repost_id(self,tid,floor_num):
         """
-        get repostid for reply in floor
+        获取楼中楼回复所需的repostid
         :param tid: id of the post.
         :param floor_num: the num of the floor to reply.
         """
