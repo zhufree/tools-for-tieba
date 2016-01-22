@@ -18,27 +18,30 @@ from account import Account
 
 
 class Bar(object):
+
     """Get Info Of A Bar,Do Post And Reply"""
 
-    def __init__(self, tiebaurl):
+    def __init__(self, tiebaurl, user):
         self.url = tiebaurl
+        self.session = user.session
 
     def get_info(self):
-    	""" get fid and tbs of a certian bar """
-        tiebaPage = BeautifulSoup(urllib2.urlopen(self.url), 'lxml')
-        pageContent = str(tiebaPage)
-        # print pageContent
+        """ get fid and tbs of a certian bar """
+        tieba_req = self.session.get(self.url)
+        tiebaPage = BeautifulSoup(tieba_req.text, 'lxml')
+        
+        # print tieba_req.text
         # with open('test.html','w') as out:
-            # out.write(pageContent)
+        # out.write(tieba_req.text)
 
-        fidMatch = re.search(u"\"forum_id\":([0-9]+),", pageContent)
-        tbsMatch = re.search(u'PageData\.tbs = \"(?P<tbsValue>.*?)\"', pageContent)
-        titleStr = tiebaPage.find('title').string.replace('吧_百度贴吧', '')
+        fidMatch = re.search(u"\"forum_id\":([0-9]+),", tieba_req.text)
+        tbsMatch = re.search(
+            u'PageData\.tbs = \"(?P<tbsValue>.*?)\"', tieba_req.text)
 
         # some key param
         self.fid = fidMatch.group(1)
         self.tbs = tbsMatch.group('tbsValue')
-        self.kw = titleStr
+        self.kw = tiebaPage.find('title').string.replace('吧_百度贴吧', '')
         # print 'fid is:',self.fid
         # print 'tbs is: ',self.tbs
 
@@ -52,16 +55,18 @@ class Bar(object):
         :return:A list contain userid,as well as a txt file
         """
         # print u'获取吧友id...'
-        page_count = 1 
+        page_count = 1
         # count from first page
-        f = open(slef.kw+'userid.txt','w+')
+        f = open(slef.kw+'userid.txt', 'w+')
         user_list = []
         while True:
-            user_url = 'http://tieba.baidu.com/f/like/furank?kw=%s&ie=utf-8&pn=%d' % (self.kw,page_count)
-            idRequest = urllib2.Request(user_url)
-            idSoup=BeautifulSoup(urllib2.urlopen(idRequest), 'lxml')
-            divs=idSoup.find_all('div',{'class':'drl_item_card'})#find 
-            user_list += [div.next.renderContents().encode('utf-8') for div in divs]
+            user_url = 'http://tieba.baidu.com/f/like/furank?kw=%s&ie=utf-8&pn=%d' % (
+                self.kw, page_count)
+            id_req = self.session.get(user_url)
+            idSoup = BeautifulSoup(id_req.text, 'lxml')
+            divs = idSoup.find_all('div', {'class': 'drl_item_card'})  # find
+            user_list += [div.next.renderContents().encode('utf-8')
+                          for div in divs]
             f.writelines(','.join(user_list))
             if not divs:
                 break
@@ -70,7 +75,7 @@ class Bar(object):
         # print '完成'
         return user_list
 
-    def post(self,title,content):
+    def post(self, title, content):
         """
         mouse_pwd is create by js,using for robot examination.
         kw is the name of the tieba.
@@ -93,14 +98,10 @@ class Bar(object):
             'tbs': self.tbs,
             'tid': '0',
         }
-        postData = urllib.urlencode(threadData)
-        postThread = urllib2.Request(ADD_THREAD_URL, postData, HEADERS)
-        send = urllib2.urlopen(postThread)
-        buffer_ = StringIO(send.read())
-        f = gzip.GzipFile(fileobj=buffer_)
-        postResponse = f.read()
-        #print postResponse
-        #the postResponse is like below
+        post_req = self.session.post(ADD_THREAD_URL, data=threadData)
+        postResponse = post_req.text
+        # print postResponse
+        # the postResponse is like below
         '''
         {"no":0,
         "err_code":0,
@@ -121,16 +122,16 @@ class Bar(object):
             }
         }
         '''
-        if "\"err_code\":0" in postResponse:
-            tidMatch = re.search(u"\"tid\":([0-9]+),", postResponse)
+        if "\"err_code\":0" in post_req.text:
+            tidMatch = re.search(u"\"tid\":([0-9]+),", post_req.text)
             self.tid = tidMatch.group(1)
-            # print u'发帖成功，帖子id是：'+self.tid
+            print u'发帖成功，帖子id是：'+self.tid
             return self.tid
         else:
-            # print u'发帖失败'
+            print u'发帖失败'
             return False
 
-    def reply(self,content,tid):
+    def reply(self, content, tid):
         """
         reply to certian post
         :param content:content to reply.
@@ -149,46 +150,42 @@ class Bar(object):
             'mouse_pwd_t': self.timestamp,
             'rich_text': '1',
             'tbs': self.tbs,
-            'tid': tid,#id of the post
+            'tid': tid,  # id of the post
 
         }
-        postData = urllib.urlencode(postData)
-        postThread = urllib2.Request(ADD_REPLY_URL, postData,HEADERS)
-        send = urllib2.urlopen(postThread)
-        buffer_ = StringIO( send.read())
-        f = gzip.GzipFile(fileobj=buffer_)
-        postResponse = f.read()
-        #print postResponse
-        if "\"err_code\":0" in postResponse:
+        reply_req = self.session.post(ADD_REPLY_URL, data=postData)
+        # print reply_req.text
+        if "\"err_code\":0" in reply_req.text:
             print u'回帖成功!'
             return True
         else:
             print u'回帖失败'
             return False
 
-    def get_repost_id(self,tid,floor_num):
+    def get_repost_id(self, tid, floor_num):
         """
         获取楼中楼回复所需的repostid
         :param tid: id of the post.
         :param floor_num: the num of the floor to reply.
         """
-        pn=int(floor_num)/30
-        #print pn
-        pageUrl='http://tieba.baidu.com/p/%s?pn=%d' % (tid,pn)
-        pageRequest = urllib2.Request(pageUrl)
-        pageSoup=BeautifulSoup(urllib2.urlopen(pageRequest), 'lxml')
+        pn = int(floor_num)/30
+        # print pn
+        pageUrl = 'http://tieba.baidu.com/p/%s?pn=%d' % (tid, pn)
+        page_req = self.session.get(pageUrl)
+        pageSoup = BeautifulSoup(page_req.text, 'lxml')
         # with open('test.html','w') as out:
         #     out.write(urllib2.urlopen(pageRequest).read())
-        divs= pageSoup.find_all('div',{'class':"l_post j_l_post l_post_bright  "})
-        null=None
-        false=False
+        divs = pageSoup.find_all(
+            'div', {'class': "l_post j_l_post l_post_bright  "})
+        null = None
+        false = False
         for div in divs:
             infoDict = eval(div['data-field'])
             if int(floor_num) == infoDict['content']['post_no']:
                 return infoDict['content']['post_id']
 
-    def reply_in_floor(self,content,tid,floor_num):
-    	"""
+    def reply_in_floor(self, content, tid, floor_num):
+        """
         post reply in floor
         :param content: content to post
         :param tid:id of the whole post
@@ -207,20 +204,15 @@ class Bar(object):
             'kw': self.kw,
             'rich_text': '1',
             'tbs': self.tbs,
-            'tid': tid, #id of the post
+            'tid': tid,  # id of the post
             'anonymous': 0
 
         }
         # print postData
 
-        postData = urllib.urlencode(postData)
-        postThread = urllib2.Request(ADD_REPLY_URL, postData, HEADERS)
-        send = urllib2.urlopen(postThread)
-        buffer_ = StringIO( send.read())
-        f = gzip.GzipFile(fileobj=buffer_)
-        postResponse = f.read()
-        print postResponse
-        if "\"err_code\":0" in postResponse:
+        reply_req = self.session.post(ADD_REPLY_URL, data=postData)
+        # print reply_req.text
+        if "\"err_code\":0" in reply_req.text:
             print u'回帖成功!'
             return True
         else:
@@ -228,7 +220,7 @@ class Bar(object):
             return False
 
     # 删除回复
-    def delete_reply(self,tid,floor_num):
+    def delete_reply(self, tid, floor_num):
         """
         delete certian reply 
         :param tid:id of the whole post
@@ -242,21 +234,16 @@ class Bar(object):
             'ie': 'utf-8',
             'kw': self.kw,
             'tbs': self.tbs,
-            'tid': tid,#id of the post
+            'tid': tid,  # id of the post
             'is_finf': 'false',
             'is_vipdel': '1',
         }
-        postData = urllib.urlencode(postData)
-        postThread = urllib2.Request(DELETE_REPLY_URL, postData,HEADERS)
-        send = urllib2.urlopen(postThread)
-        buffer_ = StringIO( send.read())
-        f = gzip.GzipFile(fileobj=buffer_)
-        postResponse = f.read()
-        #print postResponse
-        if "\"err_code\":0" in postResponse:
+        delete_req = self.session.post(DELETE_REPLY_URL, data=postData)
+        # print delete_req.text
+        if "\"err_code\":0" in delete_req.text:
             print u'删除成功!'
             return True
-        elif "\"err_code\":220034" in postResponse:
+        elif "\"err_code\":220034" in delete_req.text:
             print u'今天删除数目已达上限，请明天再来~'
             return False
         else:
@@ -265,24 +252,24 @@ class Bar(object):
 
     def at_all_user(self, tid):
         f = open('userid.txt', 'r')
-        while f.readline():#once nextline exist
+        while f.readline():  # once nextline exist
             reply = u''
             count = 0
-            while count < 5:#回一次贴最多只能艾特5个
-                tmp_user = '@' + f.readline().rstrip() + ' '#add @ and space
-                reply += tmp_user#add to reply content
+            while count < 5:  # 回一次贴最多只能艾特5个
+                tmp_user = '@' + f.readline().rstrip() + ' '  # add @ and space
+                reply += tmp_user  # add to reply content
                 count += 1
-            #print reply
-            result = bar.reply(reply,tid)#reply in thread
+            # print reply
+            result = bar.reply(reply, tid)  # reply in thread
             time.sleep(20)
-            while result != True:#once fail to reply ,sleep for a long time
+            while result != True:  # once fail to reply ,sleep for a long time
                 time.sleep(60)
                 result = bar.reply(reply, tid)
 
 if __name__ == '__main__':
     user = Account(USER_LIST[0]['username'], USER_LIST[0]['password'])
-    bar = Bar(FYS_URL)
+    bar = Bar(FYS_URL, user)
     bar.get_info()
-    # bar.reply_in_floor('succeed in floor','3974936496','15')
-    for i in range(20,20):
-        bar.delete_reply('3974936496',i)
+    bar.reply_in_floor('succeed in floor','3974936496','15')
+    # for i in range(20, 20):
+    #     bar.delete_reply('3974936496', i)
